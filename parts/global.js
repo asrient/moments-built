@@ -13,7 +13,11 @@ class BarButton extends React.Component {
     }
 
     render() {
-        return(<div className="center bar_butt">A</div>)
+        return(<div className="center bar_butt" onClick={()=>{
+            if(this.props.onClick!=undefined){
+                this.props.onClick();
+            }
+        }}>A</div>)
     }
 }
 

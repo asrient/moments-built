@@ -9,6 +9,5 @@ background-position: center;
 }
 .thumbs_grid{
     display:grid;
-    max-width: 35rem;
-    grid-template-columns: 25% 25% 25% 25%;
+    grid-template-columns: repeat(auto-fill,minmax(145px, 1fr));
 }

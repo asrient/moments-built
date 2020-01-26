@@ -2,16 +2,13 @@ import $ from "jquery";
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
-import Timeline from "./parts/timeline.js";
+var recs=pine.data.store('records.txt');
 
-import "./styles.css"
+import timeline from "./parts/timeline.js";
 
+import "./styles.css";
 
-function TryClose(){
-    pine.destroy();
-}
-
-
+var Timeline=timeline(recs);
 
 class Switcher extends React.Component {
         /** @props : change, selected
