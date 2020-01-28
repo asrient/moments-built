@@ -25,7 +25,8 @@ body{
     width:100%;
     height:3rem;
     display: grid;
-    grid-template-columns: auto 18rem auto;
+    grid-template-columns: auto 18rem calc(50vw - 9rem);
+    /* (100vw - 18rem)/2 */
 }
 #head{
     background: linear-gradient(rgba(233,231,233,0.6),rgba(187,186,187,0.6));
