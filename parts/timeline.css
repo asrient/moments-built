@@ -1,6 +1,6 @@
 #tl_bar{
     display:grid;
-    grid-template-columns: auto 15rem;
+    grid-template-columns: auto 10rem 15rem;
 }
 #tl{
     display:grid;
@@ -9,7 +9,7 @@
 }
 #tl_sidebar{
     width:17rem;
-    background-color: rgb(238, 238, 238);
+    background-color: rgb(216, 216, 216);
 }
 #welcome{
     height: 100vh;

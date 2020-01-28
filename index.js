@@ -2,13 +2,10 @@ import $ from "jquery";
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
-var recs=pine.data.store('records.txt');
-
-import timeline from "./parts/timeline.js";
+import Timeline from "./parts/timeline.js";
 
 import "./styles.css";
 
-var Timeline=timeline(recs);
 
 class Switcher extends React.Component {
         /** @props : change, selected
@@ -88,7 +85,7 @@ class Nav extends React.Component {
            return(<Timeline setBar={this.setPageBar} openPage={this.setPage} param={this.state.relayToPage} />)
         }
         else if(this.state.currentPage=='places'){
-          return(<div className="center" style={{height:'16rem'}}>🗺</div>)
+          return(<div className="center" style={{height:'100vh',fontSize:'80vh'}}>🗺</div>)
         }
         else{
             return(<div className="center" style={{height:'16rem'}}>🚧</div>)

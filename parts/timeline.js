@@ -4,13 +4,10 @@ import React, { Component } from "react";
 import {BarButton} from "./global.js";
 import {ThumbsGrid} from "./thumbs.js";
 
-import impSnap from "./addSnap.js";
+import addSnap from "./addSnap.js";
 
 import "./timeline.css";
 import "./global.css";
-
-var recs=null;
-var addSnap=null;
 
 class Timeline extends React.Component {
     /** @props : openPage, param, preview, setBar
@@ -18,14 +15,37 @@ class Timeline extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = {count:null,paths:null};
+        this.state = {count:null,paths:null,thumbSize:8};
     }
     componentDidMount=()=>{
         this.props.setBar(
         <div id="tl_bar">
         <div></div>
+        <div className="center">
+        <BarButton
+        icon="font_minus"
+        onClick={()=>{
+              //decrease size
+              var state=this.state;
+              if(state.thumbSize>3){
+                  state.thumbSize-=1;
+              this.setState(state);
+              }
+              
+          }}/>
+          <BarButton icon="font_plus" onClick={()=>{
+              //increase size
+              var state=this.state;
+              if(state.thumbSize<20){
+              state.thumbSize+=1;
+              this.setState(state);
+              }
+          }}/>
+        </div>
         <div className="center tl_bar_opts">
-            <BarButton onClick={()=>{
+            <BarButton
+            icon="QuickActions_Add"
+            onClick={()=>{
                 addSnap((c)=>{
                     console.log('new snaps',c)
                     this.getThumbPaths();
@@ -67,8 +87,8 @@ class Timeline extends React.Component {
                 return(
                     <div id="tl">
                         <div id="tl_sidebar"></div>
-                        <div style={{overflow:'auto',padding:'1rem',paddingTop:'5rem'}}>
-                           { <ThumbsGrid paths={this.state.paths} /> } 
+                        <div style={{overflow:'auto',padding:'1rem',paddingTop:'7rem'}}>
+                           { <ThumbsGrid paths={this.state.paths} thumbSize={this.state.thumbSize+'rem'} /> } 
                         </div>
                     </div>
                 )
@@ -83,7 +103,7 @@ class Timeline extends React.Component {
                   <div className="ink-blue base-regular size-s" onClick={()=>{
                       addSnap((c)=>{
                         console.log('new snaps',c)
-                        this.getThumbPaths();
+                        this.componentDidMount();
                       });
                   }}>Add</div>
                </div> 
@@ -95,10 +115,4 @@ class Timeline extends React.Component {
     }
 }
 
-function init(r){
-recs=r;
-addSnap=impSnap(recs);
-return Timeline;
-}
-
-export default init
+export default Timeline

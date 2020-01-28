@@ -6,8 +6,13 @@ background-color:rgb(212, 212, 212);
 background-size: cover;
 background-repeat: no-repeat;
 background-position: center;
+border-radius:0.3rem;
+}
+.thumb:hover{
+border:1px rgba(196, 196, 196, 0.486) solid;
 }
 .thumbs_grid{
     display:grid;
-    grid-template-columns: repeat(auto-fill,minmax(145px, 1fr));
+    grid-template-columns: repeat(auto-fill,minmax(8rem, 1fr));
+    grid-column-gap: 10px;
 }

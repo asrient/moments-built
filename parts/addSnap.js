@@ -5,7 +5,6 @@
 var fs = pine.include('fs');
 var crypto = pine.include('crypto');
 
-var recs=null;
 
 function copy(pth,ind=0,cb=function(){}) {
     var id = crypto.randomBytes(5).toString('hex') + '.jpg';
@@ -47,9 +46,5 @@ function start(cb=function(){}) {
     })
 }
 
-function init(r){
-    recs=r;
-    return start;
-    }
 
-export default init
+export default start;

@@ -11,14 +11,19 @@ class BarButton extends React.Component {
         super(props);
         this.state = {}
     }
-
+    getContent = () => {
+     if(this.props.icon!=undefined){
+         return(<div className="bar_butt_icon" 
+         style={{backgroundImage:'url(common://icons/'+this.props.icon+'.png)'}}></div>)
+     }
+    }
     render() {
-        return(<div className="center bar_butt" onClick={()=>{
-            if(this.props.onClick!=undefined){
+        return (<div className="center bar_butt" onClick={() => {
+            if (this.props.onClick != undefined) {
                 this.props.onClick();
             }
-        }}>A</div>)
+        }}>{this.getContent()}</div>)
     }
 }
 
-export {BarButton}
+export { BarButton }
