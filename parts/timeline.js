@@ -15,7 +15,7 @@ class Timeline extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = {count:null,paths:null,thumbSize:8};
+        this.state = {count:null,paths:null,thumbSize:11};
     }
     componentDidMount=()=>{
         this.props.setBar(
@@ -50,7 +50,9 @@ class Timeline extends React.Component {
                     console.log('new snaps',c)
                     this.getThumbPaths();
                 });
-            }}/><BarButton/><BarButton/>
+            }}/>
+            <BarButton icon="Navigation_Trash" />
+            <BarButton icon="QuickActions_Share" />
         </div>
         </div>)
        recs.count({},(err,count)=>{

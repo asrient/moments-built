@@ -9,7 +9,6 @@ body{
     font-size: 0.9rem;
     font-weight: 400;
     background-color: rgb(255, 255, 255);
-    border:0.5px rgba(0, 0, 0, 0.10) solid;
     box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.28);
     border-radius: 0.4rem;
     overflow: hidden;
@@ -41,7 +40,9 @@ body{
 }
 .switch{
     padding:0.3rem 0.6rem;
+    border:0.5px rgba(0, 0, 0, 0.10) solid;
     border-right:2px rgba(0, 0, 0, 0.07) solid;
+    border-left: 0px;
 }
 .active_switch{
     background: linear-gradient(#65AFFA,#0E81FF);
@@ -49,7 +50,10 @@ body{
     color:white;
 }
 .switch:nth-last-child(1){
-    border-right:none;
+    border-right:0.5px rgba(0, 0, 0, 0.10) solid;
+}
+.switch:first-child(){
+    border-left:0.5px rgba(0, 0, 0, 0.10) solid;
 }
 #pagebar{
     height: 2.5rem;
