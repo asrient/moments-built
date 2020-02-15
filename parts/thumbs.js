@@ -12,20 +12,20 @@ class Thumb extends React.Component {
         super(props);
         this.state = {}
     }
-    componentDidMount=()=>{
+    componentDidMount = () => {
     }
     render() {
-        var size='8rem';
-        if(this.props.size!=undefined&&this.props.size!=null){
-         size=this.props.size;
+        var size = '8rem';
+        if (this.props.size != undefined && this.props.size != null) {
+            size = this.props.size;
         }
-        return(
-            <div className="thumb" style={{"backgroundImage":'url('+this.props.src+')',height:size,width:size}} 
-            onClick={()=>{
-                if(this.props.onClick!=undefined){
-                    this.props.onClick(this.props.src);
-                }
-            }}
+        return (
+            <div className="thumb" style={{ "backgroundImage": 'url(' + this.props.src + ')', height: size, width: size }}
+                onClick={() => {
+                    if (this.props.onClick != undefined) {
+                        this.props.onClick(this.props.src);
+                    }
+                }}
             ></div>
         )
     }
@@ -37,31 +37,52 @@ class ThumbsGrid extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = {list:null}
+        this.state = { list: null }
     }
-    componentDidMount=()=>{
-       
+    componentDidMount = () => {
+
     }
-    showThumbs=()=>{
-        var html=[];
-        if(this.props.paths!=undefined&&this.props.paths!=null){
-            this.props.paths.forEach((pth,key)=>{
-                html.push(<Thumb size={this.props.thumbSize} key={key} src={'files://media/'+pth} />)
-             })
+    showThumbs = () => {
+        var html = [];
+        if (this.props.snaps != undefined && this.props.snaps != null) {
+            this.props.snaps.forEach((snap, key) => {
+                html.push(<Thumb size={this.props.thumbSize} key={key} src={snap.url} id={snap.id} />)
+            })
         }
-    return(html);
+        return (html);
+    }
+    getGrid=()=>{
+        var size = '8rem';
+        if (this.props.thumbSize != undefined) {
+            size = this.props.thumbSize;
+        }
+        return (
+            <div className="thumbs_grid"
+                style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(' + size + ', 1fr))' }}
+            >  {this.showThumbs()} </div>
+        )
     }
     render() {
-        var size='8rem';
-        if(this.props.thumbSize!=undefined){
-         size=this.props.thumbSize;
+        
+        if(this.props.title!=undefined){
+          return(
+              <div>
+                  <div>
+                      <div className="tg_title ink-black base-regular">{this.props.title}</div>
+                      <div  className="tg_location ink-dark base-semilight">{this.props.location} </div>
+                  </div>
+                  
+                  <div>
+                      {this.getGrid()}
+                  </div>
+              </div>
+          )
         }
-        return(
-              <div className="thumbs_grid"
-              style={{gridTemplateColumns:'repeat(auto-fill,minmax('+size+', 1fr))'}}
-              >  {this.showThumbs()} </div>
-            )
+        else{
+            return(<div>{this.getGrid()}</div>)
+        }
+        
     }
 }
 
-export {Thumb,ThumbsGrid}
+export { Thumb, ThumbsGrid }

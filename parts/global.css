@@ -10,7 +10,7 @@
     box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.28);
 }
 .bar_butt:hover{
-    background: #6D6D6D;
+    background: rgba(233,231,233,0.6);
 }
 .bar_butt_icon{
     height: 1rem;

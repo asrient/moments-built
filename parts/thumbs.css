@@ -16,3 +16,14 @@ border:1px rgba(196, 196, 196, 0.486) solid;
     grid-template-columns: repeat(auto-fill,minmax(8rem, 1fr));
     grid-column-gap: 10px;
 }
+.tg_title{
+    padding:0.5rem;
+    padding-bottom: 0rem;
+    font-size: 1.6rem;
+    margin-top:1rem; 
+}
+.tg_location{
+    font-size: 0.9rem;
+    padding-left: 0.7rem;
+    margin-bottom: 0.5rem;
+}
