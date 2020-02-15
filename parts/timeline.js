@@ -1,7 +1,7 @@
 import $ from "jquery";
 import React, { Component } from "react";
 
-import { BarButton } from "./global.js";
+import { BarButton,Loading } from "./global.js";
 import { ThumbsGrid } from "./thumbs.js";
 
 import addSnap from "./addSnap.js";
@@ -48,11 +48,11 @@ class Timeline extends React.Component {
                         onClick={() => {
                             addSnap((c) => {
                                 console.log('new snaps', c)
-                                this.getSnaps();
+                                this.getSnaps(0);
                             });
                         }} />
                     <BarButton icon="Navigation_Trash" />
-                    <BarButton icon="QuickActions_Share" />
+                    <BarButton icon="QuickActions_Share" onClick={()=>{this.getSnaps()}} />
                 </div>
             </div>)
         recs.count({}, (err, count) => {
@@ -61,36 +61,55 @@ class Timeline extends React.Component {
             console.log(state);
             this.setState(state);
         })
-        this.getSnaps();
+        this.getSnaps(0);
     }
-    getSnaps = () => {
-        this.sortByDays();
+    getSnaps = (from) => {
+        this.sortByDays(from);
     }
-    sortByDays = () => {
+    sortByDays = (from) => {
         const months = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
-
-        recs.find({}).sort({ taken_on: -1 }).exec((err, data) => {
-            var sections = [];
+            "July", "August", "September", "October", "November", "December"];
+        var state = this.state;
+        if(from==0){
+            state.sections=[];
+            state.showCount=0;
+        }
+        console.log("sorting..",state.showCount);
+        recs.find({}).sort({ taken_on: -1 }).skip(state.showCount).limit(10).exec((err, data) => {
+            var sections = this.state.sections;
             var todate = new Date();
             var today = { day: todate.getUTCDate(), month: todate.getUTCMonth(), year: todate.getUTCFullYear() };
-            var counter = JSON.stringify(today);
-            var section = { title: "Today", location: "Somewhere on Earth", date: today, snaps: [] }
+           
+            if(sections[sections.length-1]==undefined){
+                var section = { title: "Today", location: "Somewhere on Earth", date: today, snaps: [] }
+                var counter = JSON.stringify(today);
+            }
+            else{
+                var section = sections[sections.length-1]
+                var counter = JSON.stringify(section.date);
+            }
+
+            state.showCount+=data.length;
+
             data.forEach(snap => {
                 var dt = new Date(snap.taken_on);
                 var takenOn = { day: dt.getUTCDate(), month: dt.getUTCMonth(), year: dt.getUTCFullYear() };
                 if (counter == JSON.stringify(takenOn)) {
                     //it belongs to the current section
-                    console.log("same sec", takenOn);
                     section.snaps.push({ url: snap.url, id: snap.id })
                 }
                 else {
                     //create a new section and flush the old one
                     //New day!
                     if (section.snaps.length) {
-                        sections.push(section);
-                        console.log(section)
+                        console.log("flushing sec",section.title)
+                        if(sections[sections.length-1]!=undefined&&(JSON.stringify(section.date)==JSON.stringify(sections[sections.length-1].date))){
+                            console.log("appending last sec",section);
+                            sections[sections.length-1]=section;
+                        }
+                        else{
+                            sections.push(section);
+                        }
                     }
                     counter = JSON.stringify(takenOn);
                     var title = takenOn.day + " " + months[takenOn.month];
@@ -107,10 +126,14 @@ class Timeline extends React.Component {
             })
             //flush the last sec
             if (section.snaps.length) {
-                console.log(section)
-                sections.push(section);
+                if(sections[sections.length-1]!=undefined&&(JSON.stringify(section.date)==JSON.stringify(sections[sections.length-1].date))){
+                    sections[sections.length-1]=section;
+                }
+                else{
+                    sections.push(section);
+                }
             }
-            var state = this.state;
+            
             state.sections = sections;
             this.setState(state);
         })
@@ -120,6 +143,13 @@ class Timeline extends React.Component {
         this.state.sections.forEach((sec, key) => {
             html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} location={sec.location} />)
         })
+        html.push(
+            <div style={{margin:'2rem'}} className="center" key="loading" >
+                <Loading size="l" onVisible={()=>{
+                    this.getSnaps();
+                }}/>
+            </div>
+        )
         return (html)
     }
     render() {
