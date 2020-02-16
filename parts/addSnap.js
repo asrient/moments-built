@@ -15,8 +15,9 @@ function copy(pth, ind = 0, cb = function () { }) {
             fs.copyFile(pth, pine.paths.data + '/apps/moments/files/media/' + id + '.jpg', (err) => {
                 console.log('copying done', err)
                 var dt = new Date;
-                recs.insert({ id, filename: id + '.jpg', url: 'files://media/' + id + '.jpg', added_on: dt.getTime(), taken_on })
-                cb(ind);
+                var rec={ id, filename: id + '.jpg', url: 'files://media/' + id + '.jpg', added_on: dt.getTime(), taken_on };
+                recs.insert(rec)
+                cb(ind,rec);
             });
         }
         else {
@@ -38,12 +39,14 @@ function start(cb = function () { }) {
         ]
     }).then(result => {
         if (!result.canceled) {
+            var res=[];
             result.filePaths.forEach((pth, index) => {
-                copy(pth, index, (ind) => {
+                copy(pth, index, (ind,rec) => {
+                    res.push(rec);
                     if (ind + 1 == result.filePaths.length) {
                         //after last snap
                         console.log('import done');
-                        cb(ind + 1);
+                        cb(ind + 1,res);
                     }
                 });
             });

@@ -1,7 +1,7 @@
 import $ from "jquery";
 import React, { Component } from "react";
 
-import { BarButton,Loading } from "./global.js";
+import { BarButton, Loading } from "./global.js";
 import { ThumbsGrid } from "./thumbs.js";
 
 import addSnap from "./addSnap.js";
@@ -46,13 +46,14 @@ class Timeline extends React.Component {
                     <BarButton
                         icon="QuickActions_Add"
                         onClick={() => {
-                            addSnap((c) => {
-                                console.log('new snaps', c)
-                                this.getSnaps(0);
+                            addSnap((c, snaps) => {
+                                console.log('new snaps', c);
+                                if (c)
+                                    this.addSnaps(snaps);
                             });
                         }} />
                     <BarButton icon="Navigation_Trash" />
-                    <BarButton icon="QuickActions_Share" onClick={()=>{this.getSnaps()}} />
+                    <BarButton icon="QuickActions_Share" onClick={() => { this.getSnaps() }} />
                 </div>
             </div>)
         recs.count({}, (err, count) => {
@@ -61,12 +62,117 @@ class Timeline extends React.Component {
             console.log(state);
             this.setState(state);
         })
-        this.getSnaps(0);
+        this.getSnaps();
     }
-    getSnaps = (from) => {
-        this.sortByDays(from);
+    addSnaps = (snaps, allowNewSec) => {
+        if (allowNewSec == undefined) {
+            allowNewSec = true;
+        }
+        const months = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        var todate = new Date();
+        var today = { day: todate.getUTCDate(), month: todate.getUTCMonth(), year: todate.getUTCFullYear() };
+        var state = this.state;
+        if (snaps.length == undefined) {
+            //its a single snap
+            snaps = [snaps];
+        }
+        snaps.forEach((snap) => {
+            var dt = new Date(snap.taken_on);
+            var takenOn = { day: dt.getUTCDate(), month: dt.getUTCMonth(), year: dt.getUTCFullYear() };
+            if (state.sections.length) {
+                var secInd = 0;
+                var isSorted = false;
+                var reqSec = state.sections.find((sec, ind) => {
+                    if (JSON.stringify(sec.date) == JSON.stringify(takenOn)) {
+                        secInd = ind;
+                        return true;
+                    }
+                    else {
+
+                        if (takenOn.year < sec.date.year) {
+                            secInd = ind + 1;
+                        }
+                        else if (takenOn.year == sec.date.year) {
+                            if (takenOn.month < sec.date.month) {
+                                secInd = ind + 1;
+                            }
+                            else if (takenOn.month == sec.date.month) {
+                                if (takenOn.day < sec.date.day) {
+                                    secInd = ind + 1;
+                                }
+                            }
+                        }
+
+                        return false;
+                    }
+                })
+                if (secInd != null) {
+                    if (reqSec != undefined) {
+                        //sec already exists, add here
+                        var newSnap = { url: snap.url, id: snap.id, date: takenOn, time: dt.getTime() }
+                        var posFound = state.sections[secInd].snaps.find((snp, ind) => {
+                            if (snp.time < dt.getTime()) {
+                                state.sections[secInd].snaps.splice(ind, 0, newSnap);
+                                return true;
+                            }
+                            return false;
+                        })
+                        if (posFound == undefined) {
+                            state.sections[secInd].snaps.push(newSnap);
+                        }
+                    }
+                    else {
+                        if (allowNewSec) {
+                            //create new sec
+                            var title = takenOn.day + " " + months[takenOn.month];
+                            if (state.sections[secInd - 1] != undefined && state.sections[secInd - 1].date.year != takenOn.year) {
+                                //Date from seperate year
+                                title = title + " " + takenOn.year;
+                            }
+                            var sec = {
+                                title, location: "Somewhere on Earth", snaps: [
+                                    { url: snap.url, id: snap.id, date: takenOn, time: dt.getTime() }
+                                ], date: takenOn
+                            }
+                            if (JSON.stringify(sec.date) == JSON.stringify(today)) {
+                                sec.title == "Today"
+                            }
+                            state.sections.splice(secInd, 0, sec);
+                        }
+                        else { console.log("Snap to be loaded later"); }
+                    }
+                }
+                else {
+                    console.error("err: index of sec is null");
+                }
+            }
+            else {
+                //create first section
+                var title = takenOn.day + " " + months[takenOn.month];
+                var sec = {
+                    title, location: "Somewhere on Earth", snaps: [
+                        { url: snap.url, id: snap.id, date: takenOn }
+                    ], date: takenOn
+                }
+                if (JSON.stringify(sec.date) == JSON.stringify(today)) {
+                    sec.title == "Today"
+                }
+                state.sections = [sec];
+            }
+        })
+        this.setState(state);
     }
-    sortByDays = (from) => {
+    getSnaps = () => {
+        //this.sortByDays(from);
+        var state = this.state;
+        recs.find({}).sort({ taken_on: -1 }).skip(this.state.showCount).limit(10).exec((err, data) => {
+            state.showCount += data.length;
+            this.setState(state);
+            this.addSnaps(data);
+        })
+    }
+    /*sortByDays = (from) => {
         const months = ["January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"];
         var state = this.state;
@@ -137,17 +243,17 @@ class Timeline extends React.Component {
             state.sections = sections;
             this.setState(state);
         })
-    }
+    }*/
     getSections = () => {
         var html = []
         this.state.sections.forEach((sec, key) => {
             html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} location={sec.location} />)
         })
         html.push(
-            <div style={{margin:'2rem'}} className="center" key="loading" >
-                <Loading size="l" onVisible={()=>{
+            <div style={{ margin: '2rem' }} className="center" key="loading" >
+                <Loading size="l" onVisible={() => {
                     this.getSnaps();
-                }}/>
+                }} />
             </div>
         )
         return (html)
@@ -180,9 +286,10 @@ class Timeline extends React.Component {
                         <div className="ink-dark base-semilight size-xs">Add some photos and videos</div>
                         <br />
                         <div className="ink-blue base-regular size-s" onClick={() => {
-                            addSnap((c) => {
+                            addSnap((c, snaps) => {
                                 console.log('new snaps', c)
-                                this.componentDidMount();
+                                if (c)
+                                    this.addSnaps(snaps);
                             });
                         }}>Add</div>
                     </div>
