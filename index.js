@@ -3,9 +3,13 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
 import Timeline from "./parts/timeline.js";
+import Preview from "./parts/preview.js";
 
 import "./styles.css";
 
+opener=function(){
+console.error("opener not initialized yet");
+}
 
 class Switcher extends React.Component {
         /** @props : change, selected
@@ -82,7 +86,7 @@ class Nav extends React.Component {
     }
     getPage=()=>{
         if(this.state.currentPage=='timeline'){
-           return(<Timeline setBar={this.setPageBar} openPage={this.setPage} param={this.state.relayToPage} />)
+           return(<Timeline setBar={this.setPageBar} openPage={this.setPage} preview={opener} param={this.state.relayToPage} />)
         }
         else if(this.state.currentPage=='places'){
           return(<div className="center" style={{height:'100vh',fontSize:'80vh'}}>🗺</div>)
@@ -116,6 +120,9 @@ class Nav extends React.Component {
 ReactDOM.render(
          <div>
          <Nav />
+         <Preview openFunc={(open)=>{
+            opener=open;
+         }} />
     </div>
    , document.getElementById('root')
 );

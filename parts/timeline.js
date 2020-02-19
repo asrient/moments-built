@@ -10,7 +10,7 @@ import "./timeline.css";
 import "./global.css";
 
 class Timeline extends React.Component {
-    /** @props : openPage, param, preview, setBar
+    /** @props : openPage, param, preview, setBar, preview
      ** 
      **/
     constructor(props) {
@@ -274,7 +274,10 @@ class Timeline extends React.Component {
                 }
                 else {
                     //create new sec, nd flush old one
-                    html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} />);
+                    html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} 
+                    onThumbClick={(id)=>{
+                        this.props.preview(id)
+                    }}  />);
                     
                     var title = months[s.date.month];
                     if(s.date.year!=date.year){
@@ -292,14 +295,18 @@ class Timeline extends React.Component {
             s.date=JSON.parse(orgDt);
         })
         //flush last sec
-        html.push(<ThumbsGrid snaps={sec.snaps} key={'last'} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} />);
+        html.push(<ThumbsGrid snaps={sec.snaps} key={'last'} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} onThumbClick={(id)=>{
+            this.props.preview(id)
+        }} />);
         return html;
     }
     getSections = () => {
         var html = [];
         if (this.state.thumbSize > 8) {
             this.state.sections.forEach((sec, key) => {
-                html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} location={sec.location} />)
+                html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} location={sec.location} onThumbClick={(id)=>{
+                    this.props.preview(id)
+                }} />)
             })
         }
         else if (this.state.thumbSize > 3) {

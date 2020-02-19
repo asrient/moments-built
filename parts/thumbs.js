@@ -10,20 +10,41 @@ class Thumb extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = {}
+        this.state = {src:this.props.src}
     }
     componentDidMount = () => {
     }
+    getData=()=>{
+        recs.findOne({id:this.props.id},(err,snap)=>{
+          if(err==null){
+              var state=this.state;
+              state.src=snap.url;
+              snap.keys().forEach((key)=>{
+                  state[key]=snap[key];
+              })
+              this.setState(state);
+          }
+        })
+    }
     render() {
         var size = '8rem';
+        var src=this.props.src;
         if (this.props.size != undefined && this.props.size != null) {
             size = this.props.size;
         }
+        if (this.props.src == undefined) {
+            if(this.state.src==undefined){
+                this.getData();
+            }
+            else{
+                src=this.state.src;
+            }
+        }
         return (
-            <div className="thumb" style={{ "backgroundImage": 'url(' + this.props.src + ')', height: size, width: size }}
+            <div className="thumb" style={{ "backgroundImage": 'url(' + src + ')', height: size, width: size }}
                 onClick={() => {
                     if (this.props.onClick != undefined) {
-                        this.props.onClick(this.props.src);
+                        this.props.onClick(this.props.id);
                     }
                 }}
             ></div>
@@ -46,7 +67,11 @@ class ThumbsGrid extends React.Component {
         var html = [];
         if (this.props.snaps != undefined && this.props.snaps != null) {
             this.props.snaps.forEach((snap, key) => {
-                html.push(<Thumb size={this.props.thumbSize} key={key} src={snap.url} id={snap.id} />)
+                html.push(<Thumb size={this.props.thumbSize} key={key} src={snap.url} id={snap.id} onClick={(id)=>{
+                    if(this.props.onThumbClick!=undefined){
+                        this.props.onThumbClick(id);
+                    }
+                }} />)
             })
         }
         return (html);
