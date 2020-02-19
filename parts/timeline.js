@@ -244,11 +244,70 @@ class Timeline extends React.Component {
             this.setState(state);
         })
     }*/
-    getSections = () => {
-        var html = []
-        this.state.sections.forEach((sec, key) => {
-            html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} location={sec.location} />)
+    sortViews = (view="months") => {
+        const months = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        var html = [];
+        var date = null;
+        var sec = null;
+        this.state.sections.forEach((s, key) => {
+            var orgDt=JSON.stringify(s.date);
+            if (key == 0) {
+                date = s.date;
+                delete date.day;
+                var title = months[s.date.month];
+                if(view=="years"){
+                    console.log("sorting by years");
+                    delete date.month;
+                    title=date.year;
+                }
+                sec = { title, snaps: s.snaps, date }
+            }
+            else {
+                delete s.date.day;
+                if(view=="years"){
+                    delete s.date.month;
+                }
+                if (JSON.stringify(date) == JSON.stringify(s.date)) {
+                    //same sec
+                    sec.snaps = sec.snaps.concat(s.snaps);
+                }
+                else {
+                    //create new sec, nd flush old one
+                    html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} />);
+                    
+                    var title = months[s.date.month];
+                    if(s.date.year!=date.year){
+                        //mention year
+                        title+=" "+s.date.year;
+                    }
+                    date = s.date;
+                    if(view=="years"){
+                        delete date.month;
+                        title=date.year;
+                    }
+                    sec = { title, snaps: s.snaps, date }
+                }
+            }
+            s.date=JSON.parse(orgDt);
         })
+        //flush last sec
+        html.push(<ThumbsGrid snaps={sec.snaps} key={'last'} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} />);
+        return html;
+    }
+    getSections = () => {
+        var html = [];
+        if (this.state.thumbSize > 8) {
+            this.state.sections.forEach((sec, key) => {
+                html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} location={sec.location} />)
+            })
+        }
+        else if (this.state.thumbSize > 3) {
+            html = this.sortViews("months");
+        }
+        else {
+            html = this.sortViews("years");
+        }
         html.push(
             <div style={{ margin: '2rem' }} className="center" key="loading" >
                 <Loading size="l" onVisible={() => {
