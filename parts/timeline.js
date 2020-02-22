@@ -172,78 +172,37 @@ class Timeline extends React.Component {
             this.addSnaps(data);
         })
     }
-    /*sortByDays = (from) => {
-        const months = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"];
-        var state = this.state;
-        if(from==0){
-            state.sections=[];
-            state.showCount=0;
-        }
-        console.log("sorting..",state.showCount);
-        recs.find({}).sort({ taken_on: -1 }).skip(state.showCount).limit(10).exec((err, data) => {
-            var sections = this.state.sections;
-            var todate = new Date();
-            var today = { day: todate.getUTCDate(), month: todate.getUTCMonth(), year: todate.getUTCFullYear() };
-           
-            if(sections[sections.length-1]==undefined){
-                var section = { title: "Today", location: "Somewhere on Earth", date: today, snaps: [] }
-                var counter = JSON.stringify(today);
+    getGrid=(snaps,key,title,location)=>{
+      return((<ThumbsGrid snaps={snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={title} location={location} onThumbClick={(id)=>{
+        var snapInd=-1;
+        var secInd=this.state.sections.findIndex((sec)=>{
+           snapInd=sec.snaps.findIndex((snap)=>{
+            if(snap.id==id){
+                return true;
             }
-            else{
-                var section = sections[sections.length-1]
-                var counter = JSON.stringify(section.date);
-            }
-
-            state.showCount+=data.length;
-
-            data.forEach(snap => {
-                var dt = new Date(snap.taken_on);
-                var takenOn = { day: dt.getUTCDate(), month: dt.getUTCMonth(), year: dt.getUTCFullYear() };
-                if (counter == JSON.stringify(takenOn)) {
-                    //it belongs to the current section
-                    section.snaps.push({ url: snap.url, id: snap.id })
-                }
-                else {
-                    //create a new section and flush the old one
-                    //New day!
-                    if (section.snaps.length) {
-                        console.log("flushing sec",section.title)
-                        if(sections[sections.length-1]!=undefined&&(JSON.stringify(section.date)==JSON.stringify(sections[sections.length-1].date))){
-                            console.log("appending last sec",section);
-                            sections[sections.length-1]=section;
-                        }
-                        else{
-                            sections.push(section);
-                        }
-                    }
-                    counter = JSON.stringify(takenOn);
-                    var title = takenOn.day + " " + months[takenOn.month];
-                    if(section.date.year!=takenOn.year){
-                        //Date from seperate year
-                        title=title+" "+takenOn.year;
-                    }
-                    section = {
-                        title, location: "Somewhere on Earth", snaps: [
-                            { url: snap.url, id: snap.id }
-                        ], date: takenOn
-                    }
-                }
-            })
-            //flush the last sec
-            if (section.snaps.length) {
-                if(sections[sections.length-1]!=undefined&&(JSON.stringify(section.date)==JSON.stringify(sections[sections.length-1].date))){
-                    sections[sections.length-1]=section;
-                }
-                else{
-                    sections.push(section);
-                }
-            }
-            
-            state.sections = sections;
-            this.setState(state);
+            return false;
+          })
+          if(snapInd>=0){
+              return true;
+          }
+          return false;
         })
-    }*/
+        this.props.preview(id,(index,cb)=>{
+            console.log('opening index: ',index);
+           
+             if(this.state.sections[secInd]!=undefined&&this.state.sections[secInd].snaps[snapInd+index]!=undefined){
+                 cb(this.state.sections[secInd].snaps[snapInd+index].id);
+             }
+             else{
+                if(this.state.sections[secInd]==undefined){
+                 //error reporting
+                 console.error("secInd undefined",secInd,snapInd);
+                }
+                 cb(null);
+             }
+        })
+    }} />))
+    }
     sortViews = (view="months") => {
         const months = ["January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"];
@@ -274,10 +233,7 @@ class Timeline extends React.Component {
                 }
                 else {
                     //create new sec, nd flush old one
-                    html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} 
-                    onThumbClick={(id)=>{
-                        this.props.preview(id)
-                    }}  />);
+                    html.push(this.getGrid(sec.snaps,key,sec.title));
                     
                     var title = months[s.date.month];
                     if(s.date.year!=date.year){
@@ -295,18 +251,14 @@ class Timeline extends React.Component {
             s.date=JSON.parse(orgDt);
         })
         //flush last sec
-        html.push(<ThumbsGrid snaps={sec.snaps} key={'last'} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} onThumbClick={(id)=>{
-            this.props.preview(id)
-        }} />);
+        html.push(this.getGrid(sec.snaps,'last',sec.title));
         return html;
     }
     getSections = () => {
         var html = [];
         if (this.state.thumbSize > 8) {
             this.state.sections.forEach((sec, key) => {
-                html.push(<ThumbsGrid snaps={sec.snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={sec.title} location={sec.location} onThumbClick={(id)=>{
-                    this.props.preview(id)
-                }} />)
+                html.push(this.getGrid(sec.snaps,key,sec.title,sec.location))
             })
         }
         else if (this.state.thumbSize > 3) {
