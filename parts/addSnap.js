@@ -4,7 +4,26 @@
 
 var fs = pine.include('fs');
 var crypto = pine.include('crypto');
+const imgTypes = ['image/jpeg', 'image/png'];
 
+function imgFormat(rec, cb) {
+    rec.type = "image";
+    var img = new pine.media.Image('media/' + rec.filename);
+    img.getInfo((info) => {
+        if (info.date != undefined) {
+            rec.taken_on = info.date;
+        }
+            img.resize(200, () => {
+                rec.thumb_url = 'files://thumbs/' + rec.filename;
+                cb(rec);
+            }, 'thumbs/' + rec.filename)
+    })
+}
+
+function vidFormat(rec, cb) {
+    rec.type = "video";
+    cb(rec);
+}
 
 function copy(pth, ind = 0, cb = function () { }) {
     fs.stat(pth, (err, stat) => {
@@ -13,11 +32,21 @@ function copy(pth, ind = 0, cb = function () { }) {
             var id = crypto.randomBytes(5).toString('hex');
             console.log('copying', pth, 'to', id);
             fs.copyFile(pth, pine.paths.data + '/apps/moments/files/media/' + id + '.jpg', (err) => {
-                console.log('copying done', err)
                 var dt = new Date;
-                var rec={ id, filename: id + '.jpg', url: 'files://media/' + id + '.jpg', added_on: dt.getTime(), taken_on };
-                recs.insert(rec)
-                cb(ind,rec);
+                var rec = { id, filename: id + '.jpg', url: 'files://media/' + id + '.jpg', added_on: dt.getTime(), taken_on };
+                var mime = pine.media.getType('media/' + rec.filename);
+                if (imgTypes.includes(mime)) {
+                    imgFormat(rec, (rec) => {
+                        recs.insert(rec);
+                        cb(ind, rec);
+                    })
+                }
+                else {
+                    vidFormat(rec, (rec) => {
+                        recs.insert(rec);
+                        cb(ind, rec);
+                    })
+                }
             });
         }
         else {
@@ -39,14 +68,14 @@ function start(cb = function () { }) {
         ]
     }).then(result => {
         if (!result.canceled) {
-            var res=[];
+            var res = [];
             result.filePaths.forEach((pth, index) => {
-                copy(pth, index, (ind,rec) => {
+                copy(pth, index, (ind, rec) => {
                     res.push(rec);
                     if (ind + 1 == result.filePaths.length) {
                         //after last snap
                         console.log('import done');
-                        cb(ind + 1,res);
+                        cb(ind + 1, res);
                     }
                 });
             });

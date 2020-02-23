@@ -10,34 +10,34 @@ class Thumb extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = {src:this.props.src}
+        this.state = { src: this.props.src }
     }
     componentDidMount = () => {
     }
-    getData=()=>{
-        recs.findOne({id:this.props.id},(err,snap)=>{
-          if(err==null){
-              var state=this.state;
-              state.src=snap.url;
-              snap.keys().forEach((key)=>{
-                  state[key]=snap[key];
-              })
-              this.setState(state);
-          }
+    getData = () => {
+        recs.findOne({ id: this.props.id }, (err, snap) => {
+            if (err == null) {
+                var state = this.state;
+                state.src = snap.url;
+                snap.keys().forEach((key) => {
+                    state[key] = snap[key];
+                })
+                this.setState(state);
+            }
         })
     }
     render() {
         var size = '8rem';
-        var src=this.props.src;
+        var src = this.props.src;
         if (this.props.size != undefined && this.props.size != null) {
             size = this.props.size;
         }
         if (this.props.src == undefined) {
-            if(this.state.src==undefined){
+            if (this.state.src == undefined) {
                 this.getData();
             }
-            else{
-                src=this.state.src;
+            else {
+                src = this.state.src;
             }
         }
         return (
@@ -67,8 +67,8 @@ class ThumbsGrid extends React.Component {
         var html = [];
         if (this.props.snaps != undefined && this.props.snaps != null) {
             this.props.snaps.forEach((snap, key) => {
-                html.push(<Thumb size={this.props.thumbSize} key={key} src={snap.url} id={snap.id} onClick={(id)=>{
-                    if(this.props.onThumbClick!=undefined){
+                html.push(<Thumb size={this.props.thumbSize} key={key} src={snap.thumb} id={snap.id} type={snap.type} onClick={(id) => {
+                    if (this.props.onThumbClick != undefined) {
                         this.props.onThumbClick(id);
                     }
                 }} />)
@@ -76,7 +76,7 @@ class ThumbsGrid extends React.Component {
         }
         return (html);
     }
-    getGrid=()=>{
+    getGrid = () => {
         var size = '8rem';
         if (this.props.thumbSize != undefined) {
             size = this.props.thumbSize;
@@ -88,25 +88,25 @@ class ThumbsGrid extends React.Component {
         )
     }
     render() {
-        
-        if(this.props.title!=undefined){
-          return(
-              <div>
-                  <div>
-                      <div className="tg_title ink-black base-regular">{this.props.title}</div>
-                      <div  className="tg_location ink-dark base-semilight">{this.props.location} </div>
-                  </div>
-                  
-                  <div>
-                      {this.getGrid()}
-                  </div>
-              </div>
-          )
+
+        if (this.props.title != undefined) {
+            return (
+                <div>
+                    <div>
+                        <div className="tg_title ink-black base-regular">{this.props.title}</div>
+                        <div className="tg_location ink-dark base-semilight">{this.props.location} </div>
+                    </div>
+
+                    <div>
+                        {this.getGrid()}
+                    </div>
+                </div>
+            )
         }
-        else{
-            return(<div>{this.getGrid()}</div>)
+        else {
+            return (<div>{this.getGrid()}</div>)
         }
-        
+
     }
 }
 

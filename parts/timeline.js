@@ -110,7 +110,7 @@ class Timeline extends React.Component {
                 if (secInd != null) {
                     if (reqSec != undefined) {
                         //sec already exists, add here
-                        var newSnap = { url: snap.url, id: snap.id, date: takenOn, time: dt.getTime() }
+                        var newSnap = { url: snap.url, thumb: snap.thumb_url, type: snap.type, id: snap.id, date: takenOn, time: dt.getTime() }
                         var posFound = state.sections[secInd].snaps.find((snp, ind) => {
                             if (snp.time < dt.getTime()) {
                                 state.sections[secInd].snaps.splice(ind, 0, newSnap);
@@ -132,7 +132,7 @@ class Timeline extends React.Component {
                             }
                             var sec = {
                                 title, location: "Somewhere on Earth", snaps: [
-                                    { url: snap.url, id: snap.id, date: takenOn, time: dt.getTime() }
+                                    { url: snap.url, thumb: snap.thumb_url, id: snap.id, date: takenOn, type: snap.type, time: dt.getTime() }
                                 ], date: takenOn
                             }
                             if (JSON.stringify(sec.date) == JSON.stringify(today)) {
@@ -152,7 +152,7 @@ class Timeline extends React.Component {
                 var title = takenOn.day + " " + months[takenOn.month];
                 var sec = {
                     title, location: "Somewhere on Earth", snaps: [
-                        { url: snap.url, id: snap.id, date: takenOn }
+                        { url: snap.url, thumb: snap.thumb_url, id: snap.id, type: snap.type, date: takenOn }
                     ], date: takenOn
                 }
                 if (JSON.stringify(sec.date) == JSON.stringify(today)) {
@@ -172,59 +172,59 @@ class Timeline extends React.Component {
             this.addSnaps(data);
         })
     }
-    getGrid=(snaps,key,title,location)=>{
-      return((<ThumbsGrid snaps={snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={title} location={location} onThumbClick={(id)=>{
-        var snapInd=-1;
-        var secInd=this.state.sections.findIndex((sec)=>{
-           snapInd=sec.snaps.findIndex((snap)=>{
-            if(snap.id==id){
-                return true;
-            }
-            return false;
-          })
-          if(snapInd>=0){
-              return true;
-          }
-          return false;
-        })
-        this.props.preview(id,(index,cb)=>{
-            console.log('opening index: ',index);
-           
-             if(this.state.sections[secInd]!=undefined&&this.state.sections[secInd].snaps[snapInd+index]!=undefined){
-                 cb(this.state.sections[secInd].snaps[snapInd+index].id);
-             }
-             else{
-                if(this.state.sections[secInd]==undefined){
-                 //error reporting
-                 console.error("secInd undefined",secInd,snapInd);
+    getGrid = (snaps, key, title, location) => {
+        return ((<ThumbsGrid snaps={snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={title} location={location} onThumbClick={(id) => {
+            var snapInd = -1;
+            var secInd = this.state.sections.findIndex((sec) => {
+                snapInd = sec.snaps.findIndex((snap) => {
+                    if (snap.id == id) {
+                        return true;
+                    }
+                    return false;
+                })
+                if (snapInd >= 0) {
+                    return true;
                 }
-                 cb(null);
-             }
-        })
-    }} />))
+                return false;
+            })
+            this.props.preview(id, (index, cb) => {
+                console.log('opening index: ', index);
+
+                if (this.state.sections[secInd] != undefined && this.state.sections[secInd].snaps[snapInd + index] != undefined) {
+                    cb(this.state.sections[secInd].snaps[snapInd + index].id);
+                }
+                else {
+                    if (this.state.sections[secInd] == undefined) {
+                        //error reporting
+                        console.error("secInd undefined", secInd, snapInd);
+                    }
+                    cb(null);
+                }
+            })
+        }} />))
     }
-    sortViews = (view="months") => {
+    sortViews = (view = "months") => {
         const months = ["January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"];
         var html = [];
         var date = null;
         var sec = null;
         this.state.sections.forEach((s, key) => {
-            var orgDt=JSON.stringify(s.date);
+            var orgDt = JSON.stringify(s.date);
             if (key == 0) {
                 date = s.date;
                 delete date.day;
                 var title = months[s.date.month];
-                if(view=="years"){
+                if (view == "years") {
                     console.log("sorting by years");
                     delete date.month;
-                    title=date.year;
+                    title = date.year;
                 }
                 sec = { title, snaps: s.snaps, date }
             }
             else {
                 delete s.date.day;
-                if(view=="years"){
+                if (view == "years") {
                     delete s.date.month;
                 }
                 if (JSON.stringify(date) == JSON.stringify(s.date)) {
@@ -233,32 +233,32 @@ class Timeline extends React.Component {
                 }
                 else {
                     //create new sec, nd flush old one
-                    html.push(this.getGrid(sec.snaps,key,sec.title));
-                    
+                    html.push(this.getGrid(sec.snaps, key, sec.title));
+
                     var title = months[s.date.month];
-                    if(s.date.year!=date.year){
+                    if (s.date.year != date.year) {
                         //mention year
-                        title+=" "+s.date.year;
+                        title += " " + s.date.year;
                     }
                     date = s.date;
-                    if(view=="years"){
+                    if (view == "years") {
                         delete date.month;
-                        title=date.year;
+                        title = date.year;
                     }
                     sec = { title, snaps: s.snaps, date }
                 }
             }
-            s.date=JSON.parse(orgDt);
+            s.date = JSON.parse(orgDt);
         })
         //flush last sec
-        html.push(this.getGrid(sec.snaps,'last',sec.title));
+        html.push(this.getGrid(sec.snaps, 'last', sec.title));
         return html;
     }
     getSections = () => {
         var html = [];
         if (this.state.thumbSize > 8) {
             this.state.sections.forEach((sec, key) => {
-                html.push(this.getGrid(sec.snaps,key,sec.title,sec.location))
+                html.push(this.getGrid(sec.snaps, key, sec.title, sec.location))
             })
         }
         else if (this.state.thumbSize > 3) {
