@@ -3,7 +3,7 @@ import React, { Component } from "react";
 
 import { BarButton, Loading } from "./global.js";
 import { ThumbsGrid } from "./thumbs.js";
-
+import deleteSnap from "./deleteSnap.js";
 import addSnap from "./addSnap.js";
 
 import "./timeline.css";
@@ -63,6 +63,26 @@ class Timeline extends React.Component {
             this.setState(state);
         })
         this.getSnaps();
+    }
+    removeSnaps = (ids) => {
+        var state = this.state;
+        ids.forEach((id) => {
+            var i=this.findIndex(id);
+            if (i!=null) {
+                if (state.sections[i.secInd].snaps.length > 1) {
+                    state.sections[i.secInd].snaps.splice(i.snapInd,1)
+                }
+                else {
+                     state.sections.splice(i.secInd,1);
+                }
+            }
+        })
+        this.setState(state);
+    }
+    deleteSnaps = (ids) => {
+        deleteSnap(ids, () => {
+            this.removeSnaps(ids);
+        })
     }
     addSnaps = (snaps, allowNewSec) => {
         if (allowNewSec == undefined) {
@@ -172,13 +192,16 @@ class Timeline extends React.Component {
             this.addSnaps(data);
         })
     }
-    getGrid = (snaps, key, title, location) => {
-        return ((<ThumbsGrid snaps={snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={title} location={location} onThumbClick={(id) => {
-            var snapInd = -1;
-            var secInd = this.state.sections.findIndex((sec) => {
+    findIndex=(id)=>{
+        var snapInd = -1;
+        var secInd = this.state.sections.findIndex((sec) => {
+            if (sec != undefined) {
                 snapInd = sec.snaps.findIndex((snap) => {
-                    if (snap.id == id) {
-                        return true;
+                    if (snap != undefined) {
+                        if (snap.id == id) {
+                            return true;
+                        }
+                        return false;
                     }
                     return false;
                 })
@@ -186,20 +209,33 @@ class Timeline extends React.Component {
                     return true;
                 }
                 return false;
-            })
+            }
+            return false;
+        })
+        if (snapInd >= 0 && secInd >= 0) {
+            return ({secInd,snapInd})
+        }
+        else return null;
+    }
+    getGrid = (snaps, key, title, location) => {
+        return ((<ThumbsGrid snaps={snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={title} location={location} onThumbClick={(id) => {
+           var i=this.findIndex(id);
             this.props.preview(id, (index, cb) => {
                 console.log('opening index: ', index);
 
-                if (this.state.sections[secInd] != undefined && this.state.sections[secInd].snaps[snapInd + index] != undefined) {
-                    cb(this.state.sections[secInd].snaps[snapInd + index].id);
+                if (this.state.sections[i.secInd] != undefined && this.state.sections[i.secInd].snaps[i.snapInd + index] != undefined) {
+                    cb(this.state.sections[i.secInd].snaps[i.snapInd + index].id);
                 }
                 else {
-                    if (this.state.sections[secInd] == undefined) {
+                    if (this.state.sections[i.secInd] == undefined) {
                         //error reporting
                         console.error("secInd undefined", secInd, snapInd);
                     }
                     cb(null);
                 }
+            }, (id) => {
+                //deleted snap notify
+                this.removeSnaps([id]);
             })
         }} />))
     }

@@ -8,15 +8,30 @@ const imgTypes = ['image/jpeg', 'image/png'];
 
 function imgFormat(rec, cb) {
     rec.type = "image";
-    var img = new pine.media.Image('media/' + rec.filename);
+    var img = new pine.media.Image('tmp/' + rec.filename);
     img.getInfo((info) => {
+        console.log("gps:",info.gps);
         if (info.date != undefined) {
             rec.taken_on = info.date;
         }
-            img.resize(200, () => {
+        if (info.make != undefined) {
+            rec.make = info.make;
+        }
+        if (info.model != undefined) {
+            rec.model = info.model;
+        }
+        if (info.width != undefined) {
+            rec.width = info.width;
+        }
+        if (info.height != undefined) {
+            rec.height = info.height;
+        }
+        img.fixOrientation('media/' + rec.filename, () => {
+            img.resize(200, 'thumbs/' + rec.filename, () => {
                 rec.thumb_url = 'files://thumbs/' + rec.filename;
                 cb(rec);
-            }, 'thumbs/' + rec.filename)
+            })
+        })
     })
 }
 
@@ -29,16 +44,24 @@ function copy(pth, ind = 0, cb = function () { }) {
     fs.stat(pth, (err, stat) => {
         if (err == null) {
             var taken_on = stat.birthtimeMs;
+            var ext = pth.split('.');
+            ext = '.' + ext[ext.length - 1];
+            console.log("ext:", ext);
+            var size = stat.size;
             var id = crypto.randomBytes(5).toString('hex');
             console.log('copying', pth, 'to', id);
-            fs.copyFile(pth, pine.paths.data + '/apps/moments/files/media/' + id + '.jpg', (err) => {
-                var dt = new Date;
-                var rec = { id, filename: id + '.jpg', url: 'files://media/' + id + '.jpg', added_on: dt.getTime(), taken_on };
-                var mime = pine.media.getType('media/' + rec.filename);
+            var tmp = 'tmp/' + id + ext;
+            var tmpPath = pine.paths.data + '/apps/moments/files/' + tmp;
+            fs.copyFile(pth, tmpPath, (err) => {
+                var dt = new Date();
+                var rec = { id, filename: id + ext, size, url: 'files://media/' + id + ext, added_on: dt.getTime(), taken_on };
+                var mime = pine.media.getType(tmp);
                 if (imgTypes.includes(mime)) {
                     imgFormat(rec, (rec) => {
-                        recs.insert(rec);
-                        cb(ind, rec);
+                        fs.unlink(tmpPath, () => {
+                            recs.insert(rec);
+                            cb(ind, rec);
+                        })
                     })
                 }
                 else {

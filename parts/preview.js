@@ -2,6 +2,7 @@ import $ from "jquery";
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
+import deleteSnap from "./deleteSnap.js";
 import { BarButton, Loading } from "./global.js";
 import "./preview.css";
 
@@ -19,8 +20,23 @@ class Preview extends React.Component {
                 cb(snap);
         })
     }
+    
+    deleteSnap=()=>{
+        deleteSnap([this.state.snap.id],()=>{
+                var sid=this.state.snapIndex;
+                this.notifyDelete(this.state.snap.id);
+                this.goTo(this.state.snapIndex + 1,(succsess)=>{
+                    var state=this.state;
+                    delete state.snaps[sid];
+                  if(!succsess){
+                    state.isActive=false;
+                  }
+                  this.setState(state);
+                });
+        })
+    }
     componentDidMount = () => {
-        this.props.openFunc((id, getSnap) => {
+        this.props.openFunc((id, getSnap,notifyDelete) => {
             //show the preview now
             this.getSnapInfo(id, (snp0) => {
                 var state = { id: null, isActive: false, snaps: {}, snapIndex: 0, limits: { left: null, right: null },showTbar:true };
@@ -28,7 +44,11 @@ class Preview extends React.Component {
                 this.setState(state);
                 this.open(0);
             })
-
+            this.notifyDelete=(delId)=>{
+               if(notifyDelete!=undefined){
+                   notifyDelete(delId);
+               }
+            }
             this.getSnap = (ind, cb = function () { }) => {
                 if (this.state.snaps[ind] == undefined) {
                     var state = this.state;
@@ -88,6 +108,7 @@ class Preview extends React.Component {
             state.isActive = true;
             state.snap = snap;
             state.snapIndex = ind;
+            state.id=snap.id;
             this.setState(state);
         }
         else {
@@ -121,6 +142,22 @@ class Preview extends React.Component {
         }
         return (<div className="pv_picView" style={{ backgroundImage: "url(" + this.state.snap.url + ")",height:ht }}></div>)
     }
+    goTo=(val,cb=function(){})=>{
+        if (this.state.snaps[val] != undefined) {
+            this.open( val)
+        }
+        else {
+            this.getSnap( val, (sid) => {
+                if (sid != null) {
+                    this.open(val);
+                    cb(true);
+                }
+                else {
+                    cb(false);
+                }
+            })
+        }
+    }
     getArrow = (dir = "left") => {
         var val = 1;
         if (dir == "left") {
@@ -145,19 +182,7 @@ class Preview extends React.Component {
 
         if (willShow) {
             return (<div className={"pv_" + dir + "Arrow"} onClick={() => {
-                if (this.state.snaps[this.state.snapIndex + val] != undefined) {
-                    this.open(this.state.snapIndex + val)
-                }
-                else {
-                    this.getSnap(this.state.snapIndex + val, (sid) => {
-                        if (sid != null) {
-                            this.open(this.state.snapIndex + val);
-                        }
-                        else {
-                            console.log("last snap reached!");
-                        }
-                    })
-                }
+               this.goTo(this.state.snapIndex + val); 
             }}></div>)
         }
         else {
@@ -178,7 +203,7 @@ class Preview extends React.Component {
             return(cls);
         }
         if (this.state.snaps[ind] != undefined) {
-            var src = this.state.snaps[ind].url;
+            var src = this.state.snaps[ind].thumb_url;
             return (<img className={getClass()} key={ind}  src= {src }  onClick={() => {
                 this.open(ind);
             }}/>)
@@ -264,6 +289,9 @@ class Preview extends React.Component {
                             }
                             this.setState(state);
                         }} /><BarButton icon="Control_Share" />
+                        <BarButton icon="Navigation_Trash" onClick={()=>{
+                            this.deleteSnap();
+                        }} />
                     </div>
                 </div>
                 <div className="pv_body">
