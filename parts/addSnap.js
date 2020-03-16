@@ -37,7 +37,26 @@ function imgFormat(rec, cb) {
 
 function vidFormat(rec, cb) {
     rec.type = "video";
-    cb(rec);
+    var vid = new pine.media.Video('tmp/' + rec.filename);
+    var editor=vid.editor();
+    editor.on('codecData', function(data) {
+        console.log(data);
+    })
+    .on('end', ()=> {
+        // The 'end' event is emitted when FFmpeg finishes
+        // processing.
+        rec.thumb_url = 'files://thumbs/' + rec.id+'.jpg';
+        cb(rec);
+        console.log('Processing finished successfully');
+    })
+    .saveToFile(vid.filesDir+'/media/'+rec.filename)
+    .screenshots({
+        // Will take screens at 20%, 40%, 60% and 80% of the video
+        count: 4,
+      },vid.filesDir+'/thumbs/',()=>{
+          console.log("thumbs generated!")
+      });
+   
 }
 
 function copy(pth, ind = 0, cb = function () { }) {
@@ -66,7 +85,7 @@ function copy(pth, ind = 0, cb = function () { }) {
                 }
                 else {
                     vidFormat(rec, (rec) => {
-                        recs.insert(rec);
+                        //recs.insert(rec);
                         cb(ind, rec);
                     })
                 }

@@ -4,8 +4,20 @@ import ReactDOM from "react-dom";
 
 import Timeline from "./parts/timeline.js";
 import Preview from "./parts/preview.js";
+import state from "./parts/state.js";
+import actions from "./parts/actions.js";
 
 import "./styles.css";
+
+ window.srcs = pine.data.dictionary('sources.json');
+ if(window.srcs.get('local')==undefined){
+     console.log("Initializing sources..");
+     window.srcs.set('local',{isActive:true,count:0,type:'local'});
+ }
+state.init();
+
+window.state=state;
+window.actions=actions;
 
 opener=function(){
 console.error("opener not initialized yet");

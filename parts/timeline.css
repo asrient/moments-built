@@ -3,8 +3,7 @@
     grid-template-columns: auto 10rem 15rem;
 }
 #tl{
-    display:grid;
-    grid-template-columns: 17rem auto;
+    display:block;
     height: 100vh;
 }
 #tl_sidebar{
