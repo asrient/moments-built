@@ -67,38 +67,18 @@ class Timeline extends React.Component {
         })
     }
     parseData = () => {
-        var data = window.state.getState();
-        console.log('parsing data', data);
-        var snaps = [];
-        data.sources.forEach((src, srcInd) => {
-            src.timeline.snaps.forEach((snap, snpInd) => {
-                var dt = new Date(snap.taken_on);
+
+        var snaps = window.state.timeline.snaps((snap)=>{
+            var dt = new Date(snap.taken_on);
                 var takenOn = { day: dt.getUTCDate(), month: dt.getUTCMonth(), year: dt.getUTCFullYear() };
-                var newSnap = { url: snap.url, thumb: snap.thumb_url, type: snap.type, id: snap.id, date: takenOn, time: dt.getTime() }
-                var lastSnp = false;
-                if (snpInd == src.timeline.snaps.length - 1) {
-                    lastSnp = true;
-                }
-                var posFound = snaps.find((snp, ind) => {
-                    if (snp.time < dt.getTime()) {
-                        snaps.splice(ind, 0, newSnap);
-                        if (lastSnp) {
-                            snaps.splice(ind + 1, 0, { type: 'loader', srcId: src.id });
-                        }
-                        return true;
-                    }
-                    return false;
-                })
-                if (posFound == undefined) {
-                    snaps.push(newSnap);
-                    if (lastSnp) {
-                        snaps.push({ type: 'loader', srcId: src.id })
-                    }
-                }
-            })
-        })
-        this.state.snaps = snaps;
-        this.setState(this.state);
+                return { url: snap.url, thumb: snap.thumb_url, type: snap.type, id: snap.id, date: takenOn, time: dt.getTime() }
+        },(srcId)=>{
+           
+            return { type: 'loader', srcId }
+        });
+       this.state.snaps = snaps;
+       this.setState(this.state);
+
     }
     renderGrids = () => {
         console.log("rendering grids", this.state.snaps);
@@ -177,24 +157,7 @@ class Timeline extends React.Component {
     }
     getGrid2 = (snaps, key, title, location) => {
         return ((<ThumbsGrid snaps={snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={title} location={location} onThumbClick={(id) => {
-            /* var i = this.findIndex(id);
-             this.props.preview(id, (index, cb) => {
-                 console.log('opening index: ', index);
- 
-                 if (this.state.sections[i.secInd] != undefined && this.state.sections[i.secInd].snaps[i.snapInd + index] != undefined) {
-                     cb(this.state.sections[i.secInd].snaps[i.snapInd + index].id);
-                 }
-                 else {
-                     if (this.state.sections[i.secInd] == undefined) {
-                         //error reporting
-                         console.error("secInd undefined", secInd, snapInd);
-                     }
-                     cb(null);
-                 }
-             }, (id) => {
-                 //deleted snap notify
-                 this.removeSnaps([id]);
-             })*/
+            window.actions('PREVIEW_SNAP',{id,context:'timeline'});
         }} />))
     }
     removeSnaps = (ids) => {

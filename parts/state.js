@@ -10,7 +10,7 @@ function reducers(state = 0, action) {
             keys.forEach(key => {
                 sources.push({ id: key, timeline: { snaps: [], skip: 0, nextPageToken: null, isLoading: false } })
             });
-            return ({ sources })
+            return ({ sources, preview: { isActive: false, id: null, context: null } })
         }
         case 'UPDATE': {
             return action.state
@@ -31,6 +31,46 @@ var state = {
         store.dispatch({ type: 'INIT' })
     },
     timeline: {
+        snaps: function(snapBuilder,loaderBuilder){
+            var data = store.getState();
+            var snaps = [];
+            data.sources.forEach((src, srcInd) => {
+                src.timeline.snaps.forEach((snap, snpInd) => {
+                    var newSnap = snap;
+                    if(snapBuilder!=undefined){
+                        newSnap=snapBuilder(snap);
+                    }
+                    newSnap.taken_on=snap.taken_on;
+                    var lastSnp = false;
+                    if (snpInd == src.timeline.snaps.length - 1) {
+                        lastSnp = true;
+                    }
+                    var posFound = snaps.find((snp, ind) => {
+                        if (snp.taken_on < snap.taken_on) {
+                            snaps.splice(ind, 0, newSnap);
+                            if (lastSnp) {
+                                if(loaderBuilder!=undefined){
+                                    var loader=loaderBuilder(src.id);
+                                    snaps.splice(ind + 1, 0, loader);
+                                }
+                            }
+                            return true;
+                        }
+                        return false;
+                    })
+                    if (posFound == undefined) {
+                        snaps.push(newSnap);
+                        if (lastSnp) {
+                            if(loaderBuilder!=undefined){
+                                var loader=loaderBuilder(src.id);
+                                snaps.push(loader)
+                            }
+                        }
+                    }
+                })
+            })
+            return snaps;
+        },
         addSnaps: function (srcId = 'local', snaps) {
             var s = store.getState();
             var srcInd = null;
@@ -144,6 +184,22 @@ var state = {
     },
     updateSnap: function (prev, next) {
 
+    },
+    preview: {
+        open: function (id, context=null) {
+            var s = store.getState();
+            s.preview.isActive = true;
+            s.preview.id = id;
+            s.preview.context = context;
+            store.dispatch({ type: 'UPDATE', state: s });
+        },
+        close: function () {
+            var s = store.getState();
+            s.preview.isActive = false;
+            s.preview.id = null;
+            s.preview.context = null;
+            store.dispatch({ type: 'UPDATE', state: s });
+        }
     }
 }
 

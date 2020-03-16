@@ -132,9 +132,7 @@ class Nav extends React.Component {
 ReactDOM.render(
          <div>
          <Nav />
-         <Preview openFunc={(open)=>{
-            opener=open;
-         }} />
+         <Preview />
     </div>
    , document.getElementById('root')
 );

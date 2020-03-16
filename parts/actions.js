@@ -17,6 +17,12 @@ else if(act=="DELETE_SNAP"){
         //Broadcast event to other devices here
     })
 }
+else if(act=="PREVIEW_SNAP"){
+        window.state.preview.open(data.id,data.context);
+}
+else if(act=="CLOSE_PREVIEW"){
+    window.state.preview.close();
+}
 }
 
 export default actions;
