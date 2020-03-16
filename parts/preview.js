@@ -21,20 +21,6 @@ class Preview extends React.Component {
         })
     }
 
-    deleteSnap = () => {
-        deleteSnap([this.state.snap.id], () => {
-            var sid = this.state.snapIndex;
-            this.notifyDelete(this.state.snap.id);
-            this.goTo(this.state.snapIndex + 1, (succsess) => {
-                var state = this.state;
-                delete state.snaps[sid];
-                if (!succsess) {
-                    state.isActive = false;
-                }
-                this.setState(state);
-            });
-        })
-    }
 
     parseState = (id=null) => {
         var data = window.state.getState().preview;
@@ -59,12 +45,14 @@ class Preview extends React.Component {
                     }
                 })
                 if (ind >= 0) {
-                    state.snapInd=ind;
                     var count = 0;
                     state.snap=allSnaps[ind];
                     state.limits={left:false,right:false};
                     for (var i = ind - 5; i <= ind + 5; i++) {
                         if (allSnaps[i] != undefined) {
+                            if(i==ind){
+                            state.snapInd=count;
+                        }
                             count++;
                             state.snaps.push(allSnaps[i]);
                         }
@@ -95,70 +83,6 @@ class Preview extends React.Component {
             this.parseState();
         })
         this.parseState();
-        /* this.props.openFunc((id, getSnap,notifyDelete) => {
-             //show the preview now
-             this.getSnapInfo(id, (snp0) => {
-                 var state = { id: null, isActive: false, snaps: {}, snapIndex: 0, limits: { left: null, right: null },showTbar:true };
-                 state.snaps['0'] = snp0;
-                 this.setState(state);
-                 this.open(0);
-             })
-             this.notifyDelete=(delId)=>{
-                if(notifyDelete!=undefined){
-                    notifyDelete(delId);
-                }
-             }
-             this.getSnap = (ind, cb = function () { }) => {
-                 if (this.state.snaps[ind] == undefined) {
-                     var state = this.state;
-                     if (getSnap == undefined) {
-                         state.limits.left = 0;
-                         state.limits.right = 0;
-                         cb(null);
-                     }
-                     else {
-                         var proceed = true;
-                         if (ind > 0 && (this.state.limits.right != null && Math.abs(this.state.limits.right) <= Math.abs(ind))) {
-                             proceed = false;
-                         }
-                         if (ind < 0 && (this.state.limits.left != null && Math.abs(this.state.limits.left) <= Math.abs(ind))) {
-                             proceed = false;
-                         }
-                         console.log("getSnap resist for", ind, "left:", this.state.limits.left != null, Math.abs(this.state.limits.left) <= Math.abs(ind));
-                         if (proceed) {
-                             getSnap(ind, (sid) => {
-                                 var state = this.state;
-                                 if (sid != null) {
-                                     this.getSnapInfo(sid, (snap) => {
-                                         state.snaps[ind] = snap;
-                                         this.setState(state);
-                                         cb(sid);
-                                     })
-                                 }
-                                 else {
-                                     if (ind >= 0) {
-                                         state.limits.right = ind;
-                                     }
-                                     if (ind <= 0) {
-                                         state.limits.left = ind;
-                                     }
-                                     this.setState(state);
-                                     cb(null);
-                                 }
-                             })
-                         }
-                         else {
-                             cb(null)
-                         }
-                     }
-                 }
-                 else {
-                     return (this.state.snaps[ind])
-                 }
- 
-             }
- 
-         })*/
     }
     openByIndex = (ind) => {
         var state = this.state;
@@ -197,22 +121,7 @@ class Preview extends React.Component {
         }
         return (<div className="pv_picView" style={{ backgroundImage: "url(" + this.state.snap.url + ")", height: ht }}></div>)
     }
-    goTo = (val, cb = function () { }) => {
-        if (this.state.snaps[val] != undefined) {
-            this.open(val)
-        }
-        else {
-            this.getSnap(val, (sid) => {
-                if (sid != null) {
-                    this.open(val);
-                    cb(true);
-                }
-                else {
-                    cb(false);
-                }
-            })
-        }
-    }
+
     getArrow = (dir = "left") => {
         var val = 1;
         if (dir == "left") {
@@ -336,7 +245,15 @@ class Preview extends React.Component {
                             this.setState(state);
                         }} /><BarButton icon="Control_Share" />
                         <BarButton icon="Navigation_Trash" onClick={() => {
-                            //this.deleteSnap();
+                            var toDel=this.state.id;
+                            if(!this.state.limits.right){
+                                this.parseState(this.state.snaps[this.state.snapInd+1].id)
+                            }
+                            else if(!this.state.limits.left){
+                                console.log("moving left")
+                                this.parseState(this.state.snaps[this.state.snapInd-1].id)
+                            }
+                            window.actions('DELETE_SNAP',toDel);
                         }} />
                     </div>
                 </div>

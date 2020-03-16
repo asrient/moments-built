@@ -22,8 +22,6 @@ function reducers(state = 0, action) {
 
 let store = createStore(reducers);
 
-store.subscribe(() => console.log(store.getState()));
-
 var state = {
     getState: store.getState,
     subscribe: store.subscribe,
@@ -82,10 +80,13 @@ var state = {
                 return false;
             })
             var tl = src.timeline;
+            var nos=0;
             snaps.forEach((snap) => {
                 var posFound = tl.snaps.find((snp, ind) => {
                     if (snp.taken_on < snap.taken_on) {
                         tl.snaps.splice(ind, 0, snap);
+                        nos++;
+                        //console.log("snap added at",ind);
                         return true;
                     }
                     return false;
@@ -94,6 +95,7 @@ var state = {
                     console.warn("Snap to be added not in scope");
                 }
             })
+            s.sources[srcInd].timeline.skip+=nos;
             s.sources[srcInd].timeline = tl;
             store.dispatch({ type: 'UPDATE', state: s });
         },

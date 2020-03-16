@@ -3,8 +3,6 @@ import React, { Component } from "react";
 
 import { BarButton, Loading } from "./global.js";
 import { ThumbsGrid } from "./thumbs.js";
-import deleteSnap from "./deleteSnap.js";
-import addSnap from "./addSnap.js";
 
 import "./timeline.css";
 import "./global.css";
@@ -55,33 +53,33 @@ class Timeline extends React.Component {
         recs.count({}, (err, count) => {
             var state = this.state;
             state.count = count;
-            console.log(state);
+            // console.log(state);
             this.setState(state);
         })
         window.state.subscribe(() => {
             this.parseData();
         })
         this.parseData();
-        Object.keys(window.srcs.get()).forEach((srcId)=>{
+        Object.keys(window.srcs.get()).forEach((srcId) => {
             window.state.timeline.getSnaps(srcId);
         })
     }
     parseData = () => {
 
-        var snaps = window.state.timeline.snaps((snap)=>{
+        var snaps = window.state.timeline.snaps((snap) => {
             var dt = new Date(snap.taken_on);
-                var takenOn = { day: dt.getUTCDate(), month: dt.getUTCMonth(), year: dt.getUTCFullYear() };
-                return { url: snap.url, thumb: snap.thumb_url, type: snap.type, id: snap.id, date: takenOn, time: dt.getTime() }
-        },(srcId)=>{
-           
+            var takenOn = { day: dt.getUTCDate(), month: dt.getUTCMonth(), year: dt.getUTCFullYear() };
+            return { url: snap.url, thumb: snap.thumb_url, type: snap.type, id: snap.id, date: takenOn, time: dt.getTime() }
+        }, (srcId) => {
+
             return { type: 'loader', srcId }
         });
-       this.state.snaps = snaps;
-       this.setState(this.state);
+        this.state.snaps = snaps;
+        this.setState(this.state);
 
     }
     renderGrids = () => {
-        console.log("rendering grids", this.state.snaps);
+       // console.log("rendering grids", this.state.snaps);
         const months = ["January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"];
         var todate = new Date();
@@ -102,8 +100,8 @@ class Timeline extends React.Component {
                 }
                 section = { snaps: [] };
                 sections.push({
-                    type: 'loader', key:'loader:'+snap.srcId, load: () => {
-                        console.log("loading more snaps");
+                    type: 'loader', key: 'loader:' + snap.srcId, load: () => {
+                        // console.log("loading more snaps");
                         window.state.timeline.getSnaps(snap.srcId);
                     }
                 })
@@ -112,7 +110,7 @@ class Timeline extends React.Component {
                 var takenOn = snap.date;
                 if (counter == JSON.stringify(takenOn)) {
                     //it belongs to the current section
-                    console.log("same sec", takenOn);
+                    //console.log("same sec", takenOn);
                     section.snaps.push(snap)
                 }
                 else {
@@ -120,9 +118,9 @@ class Timeline extends React.Component {
                     //New day!
                     if (section.snaps.length) {
                         sections.push(section);
-                        console.log(section)
+                        //console.log(section)
                     }
-                    console.log(JSON.stringify(takenOn));
+                    // console.log(JSON.stringify(takenOn));
                     counter = JSON.stringify(takenOn);
                     var title = takenOn.day + " " + months[takenOn.month];
                     if (section.date != undefined && section.date.year != takenOn.year) {
@@ -157,7 +155,7 @@ class Timeline extends React.Component {
     }
     getGrid2 = (snaps, key, title, location) => {
         return ((<ThumbsGrid snaps={snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={title} location={location} onThumbClick={(id) => {
-            window.actions('PREVIEW_SNAP',{id,context:'timeline'});
+            window.actions('PREVIEW_SNAP', { id, context: 'timeline' });
         }} />))
     }
     removeSnaps = (ids) => {
@@ -176,7 +174,9 @@ class Timeline extends React.Component {
         this.setState(state);
     }
     deleteSnaps = (ids) => {
-        window.actions('DELETE_SNAP',ids);
+        ids.forEach((id) => {
+            window.actions('DELETE_SNAP', id);
+        })
     }
     addSnaps = (snaps, allowNewSec) => {
         if (allowNewSec == undefined) {
@@ -411,7 +411,7 @@ class Timeline extends React.Component {
             return (
                 <div id="welcome" className="center-col">
                     LOADING..
-         </div>
+                </div>
             )
         }
         else {
