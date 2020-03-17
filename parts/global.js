@@ -1,5 +1,6 @@
 import $ from "jquery";
 import React, { Component } from "react";
+import Switch from 'react-ios-switch';
 
 import "./global.css"
 
@@ -100,4 +101,4 @@ class Icon extends React.Component{
         src:"common://icons/TabBar_Favorites.png",style:{background:"transperent"},className:" "
     }
 
-export { BarButton, Loading, Icon }
+export { BarButton, Loading, Icon, Switch }

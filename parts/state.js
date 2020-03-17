@@ -4,12 +4,15 @@ import { Photos } from "./gPhotos.js";
 function reducers(state = 0, action) {
     switch (action.type) {
         case 'INIT': {
-            console.log(window.srcs.get())
             var keys = Object.keys(window.srcs.get());
             var sources = [];
             keys.forEach(key => {
+                if(window.srcs.get(key+'.isActive'))
                 sources.push({ id: key, timeline: { snaps: [], skip: 0, nextPageToken: null, isLoading: false } })
+                else
+                console.log("src inactive",key);
             });
+            console.log(sources);
             return ({ sources, preview: { isActive: false, id: null, context: null }, window: { isActive: false, content: null, relay: null } })
         }
         case 'UPDATE': {

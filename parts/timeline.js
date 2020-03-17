@@ -13,7 +13,7 @@ class Timeline extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { count: null, sections: [], thumbSize: 11, snaps: [], showCount: 0 };
+        this.state = { count: null, srcCount:0, thumbSize: 11, snaps: [], showCount: 0 };
     }
     componentDidMount = () => {
         this.props.setBar(
@@ -57,11 +57,22 @@ class Timeline extends React.Component {
             this.setState(state);
         })
         window.state.subscribe(() => {
+            if(this.state.srcCount==window.state.getState().sources.length)
             this.parseData();
+            else
+            this.init();
         })
         this.parseData();
-        Object.keys(window.srcs.get()).forEach((srcId) => {
-            window.state.timeline.getSnaps(srcId);
+        this.init();
+    }
+    init=()=>{
+        var srcs=window.state.getState().sources;
+        console.log("initializing tl", this.state.srcCount,srcs.length)
+        this.state.srcCount=srcs.length;
+        this.state.snaps=[];
+        this.setState(this.state);
+        srcs.forEach((src)=>{
+            window.state.timeline.getSnaps(src.id);
         })
     }
     parseData = () => {
