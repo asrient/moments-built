@@ -59,7 +59,6 @@ function actions(act, data) {
             "id": data.id,
             "access_token": data.access_token,
             "expiry_date": data.expiry_date,
-            "scope": data.scope,
             "token_type": "Bearer"
         })
         window.state.init();
@@ -74,11 +73,13 @@ function actions(act, data) {
         win.center();
         win.setMovable(false);
         win.setResizable(false);
-        win.loadURL('https://moments.kikoing.co.in/');
+        win.loadURL('https://moments.kikoing.co.in/auth');
         pine.ipc.once('LOGIN_SUCCESS', (e, arg) => {
             win.close();
         })
-
+        pine.ipc.once('LOGIN_ERROR', (e, arg) => {
+            win.close();
+        })
     }
     else if (act == "DELETE_SOURCE") {
         var src = window.srcs.get(data);
