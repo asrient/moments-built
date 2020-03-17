@@ -12,7 +12,7 @@ class Preview extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { id: null, isActive: false, snap:null,snaps: [],snapInd:0, limits:{left:false,right:false}, showTbar: true }
+        this.state = { id: null, isActive: false, snap: null, snaps: [], snapInd: 0, limits: { left: false, right: false }, showTbar: true }
     }
     getSnapInfo = (id, cb) => {
         recs.findOne({ id }, (err, snap) => {
@@ -22,14 +22,14 @@ class Preview extends React.Component {
     }
 
 
-    parseState = (id=null) => {
+    parseState = (id = null) => {
         var data = window.state.getState().preview;
         var state = this.state;
         state.isActive = data.isActive;
-        state.snaps=[];
+        state.snaps = [];
         if (data.isActive) {
-            if(id!=null){
-                state.id=id;
+            if (id != null) {
+                state.id = id;
             }
             else if (state.id == null) {
                 state.id = data.id;
@@ -46,27 +46,27 @@ class Preview extends React.Component {
                 })
                 if (ind >= 0) {
                     var count = 0;
-                    state.snap=allSnaps[ind];
-                    state.limits={left:false,right:false};
+                    state.snap = allSnaps[ind];
+                    state.limits = { left: false, right: false };
                     for (var i = ind - 5; i <= ind + 5; i++) {
                         if (allSnaps[i] != undefined) {
-                            if(i==ind){
-                            state.snapInd=count;
-                        }
+                            if (i == ind) {
+                                state.snapInd = count;
+                            }
                             count++;
                             state.snaps.push(allSnaps[i]);
                         }
-                        else{
-                            if(i==ind+1){
-                                state.limits.right=true;
+                        else {
+                            if (i == ind + 1) {
+                                state.limits.right = true;
                             }
-                            else if(i==ind-1){
-                                state.limits.left=true;
+                            else if (i == ind - 1) {
+                                state.limits.left = true;
                             }
                         }
                     }
                 }
-                else{
+                else {
                     console.error("PREVIEW: snap not in context");
                     window.actions('CLOSE_PREVIEW');
                 }
@@ -119,7 +119,13 @@ class Preview extends React.Component {
         if (this.state.showTbar) {
             ht = "calc(100% - 5rem)";
         }
-        return (<div className="pv_picView" style={{ backgroundImage: "url(" + this.state.snap.url + ")", height: ht }}></div>)
+        if (this.state.snap.type == 'image') {
+            return (<div className="pv_picView" style={{ backgroundImage: "url(" + this.state.snap.url + ")", height: ht }}></div>)
+        }
+        else {
+            return (<video src={this.state.snap.url} style={{ maxHeight: ht,maxWidth: '100%' }}
+             controls autoPlay ></video>)
+        }
     }
 
     getArrow = (dir = "left") => {
@@ -146,14 +152,14 @@ class Preview extends React.Component {
 
         if (willShow) {
             return (<div className={"pv_" + dir + "Arrow"} onClick={() => {
-                this.parseState(this.state.snaps[this.state.snapInd+val].id)
+                this.parseState(this.state.snaps[this.state.snapInd + val].id)
             }}></div>)
         }
         else {
             return (<div></div>)
         }
     }
-    getThumb = (snap,isFocus=false) => {
+    getThumb = (snap, isFocus = false) => {
         var snapInd = this.state.snapIndex;
         var getClass = () => {
             var cls = "pv_thumb"
@@ -162,57 +168,57 @@ class Preview extends React.Component {
             }
             return (cls);
         }
-            var src = snap.thumb_url;
-            return (<img className={getClass()} key={snap.id} src={src} onClick={() => {
-                this.parseState(snap.id);
-            }} />)
-        
+        var src = snap.thumb_url;
+        return (<img className={getClass()} key={snap.id} src={src} onClick={() => {
+            this.parseState(snap.id);
+        }} />)
+
     }
     getThumbsBar = () => {
         if (this.state.showTbar) {
             var html = [];
-           /* var left = -3;
-            var right = 3;
-            for (var i = -3; i <= 3; i++) {
-                var v = this.getThumb(snapInd + i);
-                if (v != null) {
-                    html.push(v);
+            /* var left = -3;
+             var right = 3;
+             for (var i = -3; i <= 3; i++) {
+                 var v = this.getThumb(snapInd + i);
+                 if (v != null) {
+                     html.push(v);
+                 }
+                 else {
+                     if (i <= 0) {
+                         left = i;
+                     }
+                     else {
+                         right = i;
+                     }
+                 }
+             }
+             if (html.length < 7) {
+                 if (right == 3) {
+                     for (var i = 4; i <= 6; i++) {
+                         var v = this.getThumb(snapInd + i);
+                         if (v != null) {
+                             html.push(v);
+                         }
+                     }
+                 }
+                 if (html.length < 7) {
+                     if (left == -3) {
+                         for (var i = -4; i >= -6; i--) {
+                             var v = this.getThumb(snapInd + i);
+                             if (v != null) {
+                                 html.splice(0, 0, v);
+                             }
+                         }
+                     }
+                 }
+             }*/
+            this.state.snaps.forEach((snap, ind) => {
+                var isFocus = false;
+                if (ind == this.state.snapInd) {
+                    isFocus = true;
                 }
-                else {
-                    if (i <= 0) {
-                        left = i;
-                    }
-                    else {
-                        right = i;
-                    }
-                }
-            }
-            if (html.length < 7) {
-                if (right == 3) {
-                    for (var i = 4; i <= 6; i++) {
-                        var v = this.getThumb(snapInd + i);
-                        if (v != null) {
-                            html.push(v);
-                        }
-                    }
-                }
-                if (html.length < 7) {
-                    if (left == -3) {
-                        for (var i = -4; i >= -6; i--) {
-                            var v = this.getThumb(snapInd + i);
-                            if (v != null) {
-                                html.splice(0, 0, v);
-                            }
-                        }
-                    }
-                }
-            }*/
-            this.state.snaps.forEach((snap,ind)=>{
-                var isFocus=false;
-                if(ind==this.state.snapInd){
-                    isFocus=true;
-                }
-              html.push(this.getThumb(snap,isFocus));
+                html.push(this.getThumb(snap, isFocus));
             })
             return (<div className="pv_tBar center">
                 {html}
@@ -245,15 +251,15 @@ class Preview extends React.Component {
                             this.setState(state);
                         }} /><BarButton icon="Control_Share" />
                         <BarButton icon="Navigation_Trash" onClick={() => {
-                            var toDel=this.state.id;
-                            if(!this.state.limits.right){
-                                this.parseState(this.state.snaps[this.state.snapInd+1].id)
+                            var toDel = this.state.id;
+                            if (!this.state.limits.right) {
+                                this.parseState(this.state.snaps[this.state.snapInd + 1].id)
                             }
-                            else if(!this.state.limits.left){
+                            else if (!this.state.limits.left) {
                                 console.log("moving left")
-                                this.parseState(this.state.snaps[this.state.snapInd-1].id)
+                                this.parseState(this.state.snaps[this.state.snapInd - 1].id)
                             }
-                            window.actions('DELETE_SNAP',toDel);
+                            window.actions('DELETE_SNAP', toDel);
                         }} />
                     </div>
                 </div>

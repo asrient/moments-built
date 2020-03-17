@@ -17,6 +17,10 @@
 #handle1{
     margin-left:5rem;
 }
+#handle2{
+    display: grid;
+    grid-template-columns: auto 3rem 4rem;
+}
 #menubar{
     width:100%;
     height:3rem;
@@ -33,10 +37,11 @@
      max-height: 6rem;
     width: 100vw;
     backdrop-filter: blur(20px);
-    z-index: 6;
+    z-index: 0;
 }
 .switch{
     padding:0.3rem 0.6rem;
+    min-width: 4rem;
     border:0.5px rgba(0, 0, 0, 0.10) solid;
     border-right:2px rgba(0, 0, 0, 0.07) solid;
     border-left: 0px;
@@ -55,4 +60,47 @@
 #pagebar{
     height: 2.5rem;
     overflow: hidden;
+}
+.src_menu{
+    background-color: rgb(255, 255, 255) !important;
+    box-shadow: 0px 5px 20px 6px #00000059;
+    height: 25rem !important;
+    width:17rem;
+    border-radius: 0.6rem !important;
+    color:rgb(20, 20, 20)!important;
+}
+.tippy-arrow{
+    color: rgb(255, 255, 255)!important;
+}
+.srcm_opt{
+    padding:0.6rem 0.4rem;
+    display: flex;
+    justify-content: space-between;
+}
+.srcm_grp_title{
+    font-size: 0.7rem;
+    border-bottom: #ececec solid thin;
+    color:rgb(122, 122, 122);
+    padding:0.3rem;
+    text-align: start;
+}
+#srcm_addbutt{
+    background-color: #0E81FF;
+    color:white;
+    border-radius: 0.4rem;
+    height: 100%;
+}
+#srcm_addbutt:hover{
+    opacity: 0.7;
+}
+#srcm_addbutt_holder{
+    position: absolute;
+    left:0px;
+    bottom: 0rem;
+    width:100%;
+    height: 3rem;
+    padding: 0.5rem 0.7rem;
+}
+.tippy-content{
+    height: 25rem;
 }

@@ -10,7 +10,7 @@ function reducers(state = 0, action) {
             keys.forEach(key => {
                 sources.push({ id: key, timeline: { snaps: [], skip: 0, nextPageToken: null, isLoading: false } })
             });
-            return ({ sources, preview: { isActive: false, id: null, context: null } })
+            return ({ sources, preview: { isActive: false, id: null, context: null }, window: { isActive: false, content: null, relay: null } })
         }
         case 'UPDATE': {
             return action.state
@@ -29,16 +29,16 @@ var state = {
         store.dispatch({ type: 'INIT' })
     },
     timeline: {
-        snaps: function(snapBuilder,loaderBuilder){
+        snaps: function (snapBuilder, loaderBuilder) {
             var data = store.getState();
             var snaps = [];
             data.sources.forEach((src, srcInd) => {
                 src.timeline.snaps.forEach((snap, snpInd) => {
                     var newSnap = snap;
-                    if(snapBuilder!=undefined){
-                        newSnap=snapBuilder(snap);
+                    if (snapBuilder != undefined) {
+                        newSnap = snapBuilder(snap);
                     }
-                    newSnap.taken_on=snap.taken_on;
+                    newSnap.taken_on = snap.taken_on;
                     var lastSnp = false;
                     if (snpInd == src.timeline.snaps.length - 1) {
                         lastSnp = true;
@@ -47,8 +47,8 @@ var state = {
                         if (snp.taken_on < snap.taken_on) {
                             snaps.splice(ind, 0, newSnap);
                             if (lastSnp) {
-                                if(loaderBuilder!=undefined){
-                                    var loader=loaderBuilder(src.id);
+                                if (loaderBuilder != undefined) {
+                                    var loader = loaderBuilder(src.id);
                                     snaps.splice(ind + 1, 0, loader);
                                 }
                             }
@@ -59,8 +59,8 @@ var state = {
                     if (posFound == undefined) {
                         snaps.push(newSnap);
                         if (lastSnp) {
-                            if(loaderBuilder!=undefined){
-                                var loader=loaderBuilder(src.id);
+                            if (loaderBuilder != undefined) {
+                                var loader = loaderBuilder(src.id);
                                 snaps.push(loader)
                             }
                         }
@@ -80,7 +80,7 @@ var state = {
                 return false;
             })
             var tl = src.timeline;
-            var nos=0;
+            var nos = 0;
             snaps.forEach((snap) => {
                 var posFound = tl.snaps.find((snp, ind) => {
                     if (snp.taken_on < snap.taken_on) {
@@ -95,7 +95,7 @@ var state = {
                     console.warn("Snap to be added not in scope");
                 }
             })
-            s.sources[srcInd].timeline.skip+=nos;
+            s.sources[srcInd].timeline.skip += nos;
             s.sources[srcInd].timeline = tl;
             store.dispatch({ type: 'UPDATE', state: s });
         },
@@ -188,7 +188,7 @@ var state = {
 
     },
     preview: {
-        open: function (id, context=null) {
+        open: function (id, context = null) {
             var s = store.getState();
             s.preview.isActive = true;
             s.preview.id = id;
@@ -200,6 +200,22 @@ var state = {
             s.preview.isActive = false;
             s.preview.id = null;
             s.preview.context = null;
+            store.dispatch({ type: 'UPDATE', state: s });
+        }
+    },
+    window: {
+        open: function (content, relay) {
+            var s = store.getState();
+            s.window.isActive = true;
+            s.window.content = content;
+            s.window.relay = relay;
+            store.dispatch({ type: 'UPDATE', state: s });
+        },
+        close: function () {
+            var s = store.getState();
+            s.window.isActive = false;
+            s.window.content = null;
+            s.window.relay = null;
             store.dispatch({ type: 'UPDATE', state: s });
         }
     }

@@ -18,11 +18,17 @@ class BarButton extends React.Component {
         }
     }
     render() {
-        return (<div className="center bar_butt" onClick={() => {
-            if (this.props.onClick != undefined) {
-                this.props.onClick();
-            }
-        }}>{this.getContent()}</div>)
+        var style={};
+        if(this.props.rounded){
+            style.borderRadius='0.8rem';
+        }
+        return (  
+                <div className="center bar_butt" style={style} onClick={() => {
+                    if (this.props.onClick != undefined) {
+                        this.props.onClick();
+                    }
+                }}>{this.getContent()}</div>
+        )
     }
 }
 class Loading extends React.Component {
@@ -31,23 +37,23 @@ class Loading extends React.Component {
      **/
     constructor(props) {
         super(props);
-        var dt=new Date();
-        this.state = {id:"spinner"+dt.getTime()}
+        var dt = new Date();
+        this.state = { id: "spinner" + dt.getTime() }
     }
-    componentDidMount(){
-        if(this.props.onVisible!=undefined){
-        var observer = new IntersectionObserver((entries)=> {
-            if(entries[0].isIntersecting === true)
-                this.props.onVisible();
-        }, { threshold: [1] });
-        
-        observer.observe(document.querySelector('#'+this.state.id))
+    componentDidMount() {
+        if (this.props.onVisible != undefined) {
+            var observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting === true)
+                    this.props.onVisible();
+            }, { threshold: [1] });
+
+            observer.observe(document.querySelector('#' + this.state.id))
         }
     }
     render() {
-        var cls="ispinner gray animating";
-        if (this.props.size=='l'){
-          cls=cls+" large"
+        var cls = "ispinner gray animating";
+        if (this.props.size == 'l') {
+            cls = cls + " large"
         }
         return (
             <div className={cls} id={this.state.id}  >
@@ -81,4 +87,17 @@ class Loading extends React.Component {
         )
     }
 }
-export { BarButton, Loading }
+
+class Icon extends React.Component{
+    render(){
+        return(
+            <img src={this.props.src} className={"icon "+this.props.className} style={this.props.style}/>
+        )
+    }
+    }
+    
+    Icon.defaultProps={
+        src:"common://icons/TabBar_Favorites.png",style:{background:"transperent"},className:" "
+    }
+
+export { BarButton, Loading, Icon }

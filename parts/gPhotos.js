@@ -15,16 +15,16 @@ class Photos {
         var rec = { id, filename: data.filename, url: data.baseUrl, added_on: dt.getTime(), taken_on: dt.getTime() }
         rec.width = data.mediaMetadata.width;
         rec.height = data.mediaMetadata.height;
+        rec.thumb_url = data.baseUrl + "=w250-h250";
         if (imgTypes.includes(data.mimeType)) {
             //its a photo
             rec.type = "image";
-            rec.thumb_url = data.baseUrl + "=w250-h250";
             rec.make = data.mediaMetadata.photo.cameraMake;
             rec.model = data.mediaMetadata.photo.cameraModel;
         }
         else {
             rec.type = "video";
-            rec.thumb_url = data.baseUrl + "=w250-h250";
+            rec.url = data.baseUrl + "=dv";
             rec.make = data.mediaMetadata.video.cameraMake;
             rec.model = data.mediaMetadata.video.cameraModel;
         }
