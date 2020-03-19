@@ -36,6 +36,60 @@ function actions(act, data) {
             }
         }
     }
+    else if (act == "TAG_SNAP") {
+        var dt = new Date();
+        var snapId = data.snapId;
+        var tagId = data.tagId;
+        var srcId = snapId.split(':')[0];
+        if (srcId == 'local') {
+            recs.update({ id: snapId }, { "$push": { "tags": tagId } }, {}, () => {
+                if (window.tags.get(tagId) != undefined) {
+                    var snaps = window.tags.get(tagId + ".snaps");
+                    snaps.push(snapId);
+                    window.tags.set(tagId + ".snaps", snaps);
+                    window.tags.set(tagId + ".modified_on", dt.getTime());
+                    window.state.tags.tagSnap(snapId,tagId);
+                    //shoot this event to other devs too
+                }
+                else {
+                    //new tag!
+                    window.tags.set(tagId, { snaps: [snapId], modified_on: dt.getTime() });
+                    window.state.tags.updateList(srcId);
+                    //shoot this event to other devs too
+                }
+            })
+        }
+        else {
+            //steps for other sources
+        }
+    }
+    else if (act == "UNTAG_SNAP") {
+        var dt = new Date();
+        var snapId = data.snapId;
+        var tagId = data.tagId;
+        var srcId = snapId.split(':')[0];
+        if (srcId == 'local') {
+            recs.update({ id: snapId }, { "$pull": { "tags": tagId } }, {}, () => {
+                    var snaps = window.tags.get(tagId + ".snaps");
+                    snaps=snaps.filter((id)=>{
+                       return id!=snapId;
+                    });
+                    if(snaps.length){
+                        window.tags.set(tagId + ".snaps", snaps);
+                    window.state.tags.untagSnap(snapId,tagId);
+                    //shoot this event to other devs too
+                    }
+                    else{
+                        //no snaps left in the tag, remove it
+                        window.tags.del(tagId);
+                        window.state.tags.updateList(srcId);
+                    }
+            })
+        }
+        else {
+            //steps for other sources
+        }
+    }
     else if (act == "PREVIEW_SNAP") {
         window.state.preview.open(data.id, data.context);
     }

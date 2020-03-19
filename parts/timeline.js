@@ -67,7 +67,6 @@ class Timeline extends React.Component {
     }
     init=()=>{
         var srcs=window.state.getState().sources;
-        console.log("initializing tl", this.state.srcCount,srcs.length)
         this.state.srcCount=srcs.length;
         this.state.snaps=[];
         this.setState(this.state);

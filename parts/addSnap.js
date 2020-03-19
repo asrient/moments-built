@@ -72,7 +72,7 @@ function copy(pth, ind = 0, cb = function () { }) {
             var tmpPath = pine.paths.data + '/apps/moments/files/' + tmp;
             fs.copyFile(pth, tmpPath, (err) => {
                 var dt = new Date();
-                var rec = { id:'local:'+id, filename: id + ext, size, url: 'files://media/' + id + ext, added_on: dt.getTime(), taken_on };
+                var rec = { id:'local:'+id, filename: id + ext, tags:[], size, url: 'files://media/' + id + ext, added_on: dt.getTime(), taken_on };
                 var mime = pine.media.getType(tmp);
                 if (imgTypes.includes(mime)) {
                     imgFormat(rec, (rec) => {

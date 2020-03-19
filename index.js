@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 
 import Timeline from "./parts/timeline.js";
 import Preview from "./parts/preview.js";
+import Tags from "./parts/tags.js";
 import Window from "./parts/window.js";
 import state from "./parts/state.js";
 import actions from "./parts/actions.js";
@@ -13,6 +14,8 @@ import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 
 window.srcs = pine.data.dictionary('sources.json');
+window.tags = pine.data.dictionary('tags.json');
+
 if (window.srcs.get('local') == undefined) {
     console.log("Initializing sources..");
     window.srcs.set('local', { isActive: true, count: 0, type: 'local', name: "Computer", icon: "common://icons/SystemEntity_Computer.png" });
@@ -198,6 +201,9 @@ class Nav extends React.Component {
         }
         else if (this.state.currentPage == 'places') {
             return (<div className="center" style={{ height: '100vh', fontSize: '80vh' }}>🗺</div>)
+        }
+        else if (this.state.currentPage == 'tags') {
+            return (<Tags setBar={this.setPageBar} openPage={this.setPage} param={this.state.relayToPage} />)
         }
         else {
             return (<div className="center" style={{ height: '16rem' }}>🚧</div>)

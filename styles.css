@@ -37,7 +37,7 @@
      max-height: 6rem;
     width: 100vw;
     backdrop-filter: blur(20px);
-    z-index: 0;
+    z-index: 1;
 }
 .switch{
     padding:0.3rem 0.6rem;

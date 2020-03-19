@@ -7,13 +7,21 @@ function reducers(state = 0, action) {
             var keys = Object.keys(window.srcs.get());
             var sources = [];
             keys.forEach(key => {
-                if(window.srcs.get(key+'.isActive'))
-                sources.push({ id: key, timeline: { snaps: [], skip: 0, nextPageToken: null, isLoading: false } })
+                if (window.srcs.get(key + '.isActive'))
+                    sources.push({
+                        id: key,
+                        timeline: { snaps: [], skip: 0, nextPageToken: null, isLoading: false },
+                        tags: {}
+                    })
                 else
-                console.log("src inactive",key);
+                    console.log("src inactive", key);
             });
             console.log(sources);
-            return ({ sources, preview: { isActive: false, id: null, context: null }, window: { isActive: false, content: null, relay: null } })
+            return ({
+                sources,
+                preview: { isActive: false, id: null, context: null },
+                window: { isActive: false, content: null, relay: null }
+            })
         }
         case 'UPDATE': {
             return action.state
@@ -30,6 +38,116 @@ var state = {
     subscribe: store.subscribe,
     init: function () {
         store.dispatch({ type: 'INIT' })
+    },
+    tags: {
+        list: function () {
+            var list = [];
+            var data = store.getState();
+            data.sources.forEach((src, srcInd) => {
+                Object.keys(src.tags).forEach((tagId) => {
+                    var ind = list.findIndex((tag) => {
+                        return tag.id == tagId
+                    })
+                    if (ind < 0) {
+                        //add this tag, not in the list
+                        src.tags[tagId].id = tagId;
+                        list.push(src.tags[tagId]);
+                    }
+                    else {
+                        //already in the list, add snaps
+                        list[ind].snaps = list[ind].snaps.concat(src.tags[tagId].snaps);
+                        if (list[ind].modified_on < src.tags[tagId].modified_on) {
+                            list[ind].modified_on = src.tags[tagId].modified_on;
+                        }
+                    }
+                })
+            })
+            list.sort((a, b) => {
+                return a.modified_on - b.modified_on;
+            })
+            return list;
+        },
+        getList: function () {
+            var data = store.getState();
+            data.sources.forEach((srcd, srcInd) => {
+                var src = window.srcs.get(srcd.id);
+                if (src.type == 'local') {
+                    var tags = window.tags.get();
+                    data.sources[srcInd].tags = tags;
+                    store.dispatch({ type: 'UPDATE', state: data });
+                }
+                else {
+                    //for other sources
+                }
+            })
+        },
+        updateList: function (srcId = 'local') {
+            //update a tag of a particular source
+            //use it after formation of a new tag or deletion of an existing one
+            //can also be used after renaming a tag or changing its properties like color or icon
+            var data = store.getState();
+            var src = window.srcs.get(srcId);
+            var srcInd = data.sources.findIndex((srcc) => {
+                if (srcId == srcc.id)
+                    return true
+                else
+                    return false
+            })
+            if (src.type == 'local') {
+                var tags = window.tags.get();
+                data.sources[srcInd].tags = tags;
+                store.dispatch({ type: 'UPDATE', state: data });
+            }
+            else {
+                //for other sources
+            }
+        },
+        tagSnap: function (snapId, tagId) {
+            //use it to add a snap to tag snaps
+            var srcId = snapId.split(':')[0];
+            var data = store.getState();
+            var srcInd = data.sources.findIndex((src) => {
+                if (srcId == src.id)
+                    return true
+                else
+                    return false
+            })
+            if (srcInd >= 0) {
+                if (data.sources[srcInd].tags[tagId] != undefined) {
+                    if (data.sources[srcInd].tags[tagId].snaps != null) {
+                        data.sources[srcInd].tags[tagId].snaps.push(snapId);
+                        store.dispatch({ type: 'UPDATE', state: data });
+                    }
+                }
+            }
+        },
+        untagSnap: function (snapId, tagId) {
+            //use it to remove a snap from tag snaps
+            var srcId = snapId.split(':')[0];
+            var data = store.getState();
+            var srcInd = data.sources.findIndex((src) => {
+                if (srcId == src.id)
+                    return true
+                else
+                    return false
+            })
+            if (srcInd >= 0) {
+                if (data.sources[srcInd].tags[tagId] != undefined) {
+                    if (data.sources[srcInd].tags[tagId].snaps != null) {
+                        var snapInd = data.sources[srcInd].tags[tagId].snaps.findIndex((snap) => {
+                            if (snap == snapId) {
+                                return true;
+                            }
+                            else return false;
+                        })
+                        if (snapInd >= 0) {
+                            data.sources[srcInd].tags[tagId].snaps.splice(snapInd, 1);
+                        }
+                        store.dispatch({ type: 'UPDATE', state: data });
+                    }
+                }
+            }
+        }
     },
     timeline: {
         snaps: function (snapBuilder, loaderBuilder) {
@@ -186,6 +304,7 @@ var state = {
     removeSnaps: function (srcId, ids) {
         this.timeline.removeSnaps(srcId, ids);
         //update other catagories like tags here
+        this.tags.updateList(srcId);
     },
     updateSnap: function (prev, next) {
 

@@ -12,7 +12,7 @@ class Photos {
     snapRec(data) {
         var id = this.srcId+":"+data.id;
         var dt = new Date(data.mediaMetadata.creationTime);
-        var rec = { id, filename: data.filename, url: data.baseUrl, added_on: dt.getTime(), taken_on: dt.getTime() }
+        var rec = { id, filename: data.filename, url: data.baseUrl, added_on: dt.getTime(), taken_on: dt.getTime(), tags:[] }
         rec.width = data.mediaMetadata.width;
         rec.height = data.mediaMetadata.height;
         rec.thumb_url = data.baseUrl + "=w250-h250";

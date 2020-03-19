@@ -15,16 +15,20 @@ class Thumb extends React.Component {
     componentDidMount = () => {
     }
     getData = () => {
-        recs.findOne({ id: this.props.id }, (err, snap) => {
-            if (err == null) {
-                var state = this.state;
-                state.src = snap.url;
-                snap.keys().forEach((key) => {
-                    state[key] = snap[key];
-                })
-                this.setState(state);
-            }
-        })
+        var srcId = this.props.id.split(':')[0];
+        if (srcId == 'local') {
+            recs.findOne({ id: this.props.id }, (err, snap) => {
+                if (snap != null) {
+                    var state = this.state;
+                    state.src = snap.thumb_url;
+                    state.type = snap.type;
+                    this.setState(state);
+                }
+            })
+        }
+        else {
+            //code for other types here.
+        }
     }
     render() {
         var size = '8rem';
@@ -40,8 +44,12 @@ class Thumb extends React.Component {
                 src = this.state.src;
             }
         }
+        var style = { height: size, width: size };
+        if (src != undefined) {
+            style["backgroundImage"] = 'url(' + src + ')';
+        }
         return (
-            <div className="thumb" style={{ "backgroundImage": 'url(' + src + ')', height: size, width: size }}
+            <div className="thumb" style={style}
                 onClick={() => {
                     if (this.props.onClick != undefined) {
                         this.props.onClick(this.props.id);
@@ -67,7 +75,7 @@ class ThumbsGrid extends React.Component {
         var html = [];
         if (this.props.snaps != undefined && this.props.snaps != null) {
             this.props.snaps.forEach((snap, key) => {
-                html.push(<Thumb size={this.props.thumbSize} key={key} src={snap.thumb} id={snap.id} type={snap.type} onClick={(id) => {
+                html.push(<Thumb size={this.props.thumbSize} key={snap.id} src={snap.thumb} id={snap.id} type={snap.type} onClick={(id) => {
                     if (this.props.onThumbClick != undefined) {
                         this.props.onThumbClick(id);
                     }
