@@ -54,15 +54,16 @@ class Tags extends React.Component {
         })
         return html;
     }
-    showGrid(tagId){
-        var tagInd=this.state.tags.findIndex((tag)=>{
-            return tag.id==tagId;
+    showGrid(tagId) {
+        var tagInd = this.state.tags.findIndex((tag) => {
+            return tag.id == tagId;
         })
-        if(tagInd>=0){
-            var snaps=this.state.tags[tagInd].snaps.map((snapId)=>{
-                return({id:snapId})
+        if (tagInd >= 0) {
+            var snaps = this.state.tags[tagInd].snaps.map((snap) => {
+                console.log(snap)
+                return ({ id: snap.id, thumb: snap.thumb_url, type: snap.type })
             })
-      return(<ThumbsGrid snaps={snaps} />)
+            return (<ThumbsGrid snaps={snaps} />)
         }
     }
     showPage(tagId) {
@@ -73,17 +74,17 @@ class Tags extends React.Component {
             </div>
             <div>
                 <div className="tg_view_head">
-                    <div style={{display:'flex',alignItems: "center"}}>
-                        <div className="tg_view_back size-s center" onClick={()=>{
-                            this.state.page='home';
+                    <div style={{ display: 'flex', alignItems: "center" }}>
+                        <div className="tg_view_back size-s center" onClick={() => {
+                            this.state.page = 'home';
                             this.setState(this.state);
-                        }}><Icon className="size-xs" style={{opacity:0.5}} src="common://icons/Control_GoBack.png" /></div>
+                        }}><Icon className="size-xs" style={{ opacity: 0.5 }} src="common://icons/Control_GoBack.png" /></div>
                         <div className="size-l ink-black base-regular">{tagId}</div>
                     </div>
-                    
+
                 </div>
-                <div style={{height:'7.6rem'}}></div>
-                    {this.showGrid(tagId)}
+                <div style={{ height: '7.6rem' }}></div>
+                {this.showGrid(tagId)}
             </div>
         </div>)
     }

@@ -42,22 +42,27 @@ function actions(act, data) {
         var tagId = data.tagId;
         var srcId = snapId.split(':')[0];
         if (srcId == 'local') {
-            recs.update({ id: snapId }, { "$push": { "tags": tagId } }, {}, () => {
-                if (window.tags.get(tagId) != undefined) {
-                    var snaps = window.tags.get(tagId + ".snaps");
-                    snaps.push(snapId);
-                    window.tags.set(tagId + ".snaps", snaps);
-                    window.tags.set(tagId + ".modified_on", dt.getTime());
-                    window.state.tags.tagSnap(snapId,tagId);
-                    //shoot this event to other devs too
+            recs.findOne({ id: snapId }, (err, snap) => {
+                if (snap != null && !snap.tags.includes(tagId)) {
+                    recs.update({ id: snapId }, { "$push": { "tags": tagId } }, {}, () => {
+                        snap.tags.push(tagId);
+                        if (window.tags.get(tagId) != undefined) {
+                            window.tags.union(tagId + ".snaps", snapId);
+                            window.tags.set(tagId + ".modified_on", dt.getTime());
+                        }
+                        else {
+                            //new tag!
+                            window.tags.set(tagId, { snaps: [snapId], modified_on: dt.getTime() });
+                        }
+                        window.state.updateSnap(snapId, snap);
+                        //shoot this event to other devs too
+                    })
                 }
                 else {
-                    //new tag!
-                    window.tags.set(tagId, { snaps: [snapId], modified_on: dt.getTime() });
-                    window.state.tags.updateList(srcId);
-                    //shoot this event to other devs too
+                    console.warn("snap already tagged")
                 }
             })
+
         }
         else {
             //steps for other sources
@@ -69,22 +74,32 @@ function actions(act, data) {
         var tagId = data.tagId;
         var srcId = snapId.split(':')[0];
         if (srcId == 'local') {
-            recs.update({ id: snapId }, { "$pull": { "tags": tagId } }, {}, () => {
-                    var snaps = window.tags.get(tagId + ".snaps");
-                    snaps=snaps.filter((id)=>{
-                       return id!=snapId;
-                    });
-                    if(snaps.length){
-                        window.tags.set(tagId + ".snaps", snaps);
-                    window.state.tags.untagSnap(snapId,tagId);
-                    //shoot this event to other devs too
-                    }
-                    else{
-                        //no snaps left in the tag, remove it
-                        window.tags.del(tagId);
-                        window.state.tags.updateList(srcId);
-                    }
+            recs.findOne({ id: snapId }, (err, snap) => {
+                if (snap != null && snap.tags.includes(tagId)) {
+                    recs.update({ id: snapId }, { "$pull": { "tags": tagId } }, {}, () => {
+                        var snaps = window.tags.get(tagId + ".snaps");
+                        snaps = snaps.filter((id) => {
+                            return id != snapId;
+                        });
+                        if (snaps.length) {
+                            window.tags.set(tagId + ".snaps", snaps);
+                        }
+                        else {
+                            //no snaps left in the tag, remove it
+                            window.tags.del(tagId);
+                        }
+                        var tagInd = snap.tags.findIndex((tg) => {
+                            return tg == tagId;
+                        })
+                        if (tagInd >= 0) {
+                            snap.tags.splice(tagInd, 1);
+                        }
+                        window.state.updateSnap(snapId, snap);
+                        //shoot this event to other devs too
+                    })
+                }
             })
+
         }
         else {
             //steps for other sources

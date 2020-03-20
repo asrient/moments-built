@@ -37,7 +37,8 @@ class Thumb extends React.Component {
             size = this.props.size;
         }
         if (this.props.src == undefined) {
-            if (this.state.src == undefined) {
+            if (this.state.src == undefined&&this.props.id!=undefined) {
+                console.warn("getting data for thumbnail");
                 this.getData();
             }
             else {
