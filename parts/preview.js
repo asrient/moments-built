@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
 import deleteSnap from "./deleteSnap.js";
-import { BarButton, Loading } from "./global.js";
+import { BarButton, Loading,Icon } from "./global.js";
 import "./preview.css";
 
 class Preview extends React.Component {
@@ -12,7 +12,7 @@ class Preview extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { id: null, isActive: false, snap: null, snaps: [], snapInd: 0, limits: { left: false, right: false }, showTbar: true }
+        this.state = { id: null, isActive: false, snap: null, snaps: [], snapInd: 0, limits: { left: false, right: false }, showTags:true, showTbar: true }
     }
     getSnapInfo = (id, cb) => {
         recs.findOne({ id }, (err, snap) => {
@@ -92,7 +92,7 @@ class Preview extends React.Component {
     }
     componentDidMount = () => {
         window.state.subscribe(() => {
-            this.parseState();
+                this.parseState();
         })
         this.parseState();
     }
@@ -240,6 +240,34 @@ class Preview extends React.Component {
             return (null);
         }
     }
+    tags(){
+        var tags=this.state.snap.tags;
+        var html=[]
+        if(tags!=undefined&&tags.length>0){
+          html=tags.map((tagId)=>{
+          return(<div key={tagId} className="pv_tag center">
+              <div onClick={()=>{
+            window.actions('CLOSE_PREVIEW');
+            window.actions('OPEN_PAGE','tags:'+tagId);
+          }}>{tagId}</div>&nbsp;&nbsp;
+          <div className="pv_tag_x center" onClick={()=>{
+              window.actions("UNTAG_SNAP",{snapId:this.state.snap.id,tagId})
+          }}><Icon className="center" src="common://icons/Freestanding_StopProgress.png" /></div></div>)
+          })
+          return(<div className="center">{html}</div>)
+        }
+    }
+    getTags(){
+      if(this.state.showTags){
+          return(<div className="center pv_tags ink-white base-regular">
+              <div className="pv_tags_add" onClick={()=>{
+                   window.actions("ADD_TAG",this.state.snap.id);
+              }}>Tag</div>
+              &nbsp;
+              {this.tags()}
+          </div>)
+      }
+    }
     render() {
         if (this.state.isActive) {
             return (<div className="pv_window">
@@ -276,6 +304,7 @@ class Preview extends React.Component {
                     </div>
                 </div>
                 <div className="pv_body">
+                    {this.getTags()}
                     {this.getArrow("left")}
                     {this.getView()}
                     {this.getArrow("right")}

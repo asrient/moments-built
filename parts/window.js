@@ -39,7 +39,7 @@ class AddTag extends React.Component {
             return (<div key={tagId} onClick={()=>{
               this.state.value=tagId;
               this.setState(this.state);
-            }} className="at_tag size-xs ink-dark base-semilight">{tagId}</div>)
+            }} className="at_tag size-xs base-semilight">{tagId}</div>)
         })
         if (html.length)
             return (<div className="at_tags">{html}</div>)

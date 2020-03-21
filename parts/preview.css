@@ -4,7 +4,7 @@ top:0px;
 left:0px;
 height: 100vh;
 width:100vw;
-z-index: 7;
+z-index: 2;
 background: rgb(245, 245, 245);
 display: grid;
 grid-template-rows: 2.5rem auto;
@@ -82,4 +82,39 @@ grid-template-rows: 2.5rem auto;
 }
 .pv_thumbFocused{
     margin:0.5rem 1rem;
+}
+.pv_tags{
+    position: absolute;
+    top:3rem;
+    font-size: 0.8rem;
+    right: 1rem;
+    flex-direction: row-reverse;
+}
+.pv_tags_add{
+    margin:0.3rem;
+    padding: 0.3rem 0.6rem;
+    background-color: rgba(0, 0, 0, 0.342);
+    backdrop-filter: blur(20px);
+    border-radius: 0.8rem;
+    color:white;
+}
+.pv_tag{
+    margin:0.3rem;
+    padding: 0.3rem 0.6rem;
+    background-color: rgba(0, 0, 0, 0.342);
+    backdrop-filter: blur(20px);
+    border-radius: 0.4rem;
+    color:white;
+}
+.pv_tag:hover{
+    background-color: rgba(0, 0, 0, 0.39);
+}
+.pv_tags_add:hover{
+    background-color: rgba(0, 68, 255, 0.596);
+}
+.pv_tag_x:hover{
+    opacity: 0.6;
+    transform: scale(1.1);
+    rotate: 180deg;
+    transition-duration: 100ms;
 }
