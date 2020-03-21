@@ -23,8 +23,12 @@ class BarButton extends React.Component {
         if(this.props.rounded){
             style.borderRadius='0.8rem';
         }
+        var cls="center bar_butt";
+        if(this.props.selected){
+            cls+=' bar_butt_selected';
+        }
         return (  
-                <div className="center bar_butt" style={style} onClick={() => {
+                <div className={cls} style={style} onClick={() => {
                     if (this.props.onClick != undefined) {
                         this.props.onClick();
                     }

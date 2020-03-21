@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
 import deleteSnap from "./deleteSnap.js";
-import { BarButton, Loading,Icon } from "./global.js";
+import { BarButton, Loading, Icon } from "./global.js";
 import "./preview.css";
 
 class Preview extends React.Component {
@@ -12,7 +12,7 @@ class Preview extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { id: null, isActive: false, snap: null, snaps: [], snapInd: 0, limits: { left: false, right: false }, showTags:true, showTbar: true }
+        this.state = { id: null, isActive: false, snap: null, snaps: [], snapInd: 0, limits: { left: false, right: false }, showTags: true, showTbar: true }
     }
     getSnapInfo = (id, cb) => {
         recs.findOne({ id }, (err, snap) => {
@@ -92,7 +92,7 @@ class Preview extends React.Component {
     }
     componentDidMount = () => {
         window.state.subscribe(() => {
-                this.parseState();
+            this.parseState();
         })
         this.parseState();
     }
@@ -240,47 +240,49 @@ class Preview extends React.Component {
             return (null);
         }
     }
-    tags(){
-        var tags=this.state.snap.tags;
-        var html=[]
-        if(tags!=undefined&&tags.length>0){
-          html=tags.map((tagId)=>{
-          return(<div key={tagId} className="pv_tag center">
-              <div onClick={()=>{
-            window.actions('CLOSE_PREVIEW');
-            window.actions('OPEN_PAGE','tags:'+tagId);
-          }}>{tagId}</div>&nbsp;&nbsp;
-          <div className="pv_tag_x center" onClick={()=>{
-              window.actions("UNTAG_SNAP",{snapId:this.state.snap.id,tagId})
-          }}><Icon className="center" src="common://icons/Freestanding_StopProgress.png" /></div></div>)
-          })
-          return(<div className="center">{html}</div>)
+    tags() {
+        var tags = this.state.snap.tags;
+        var html = []
+        if (tags != undefined && tags.length > 0) {
+            html = tags.map((tagId) => {
+                return (<div key={tagId} className="pv_tag center">
+                    <div onClick={() => {
+                        window.actions('CLOSE_PREVIEW');
+                        window.actions('OPEN_PAGE', 'tags:' + tagId);
+                    }}>{tagId}</div>&nbsp;&nbsp;
+                    <div className="pv_tag_x center" onClick={() => {
+                        window.actions("UNTAG_SNAP", { snapId: this.state.snap.id, tagId })
+                    }}><Icon className="center" src="common://icons/Freestanding_StopProgress.png" /></div></div>)
+            })
+            return (<div className="center">{html}</div>)
         }
     }
-    getTags(){
-      if(this.state.showTags){
-          return(<div className="center pv_tags ink-white base-regular">
-              <div className="pv_tags_add" onClick={()=>{
-                   window.actions("ADD_TAG",this.state.snap.id);
-              }}>Tag</div>
+    getTags() {
+        if (this.state.showTags) {
+            return (<div className="center pv_tags ink-white base-regular">
+                <div className="pv_tags_add" onClick={() => {
+                    window.actions("ADD_TAG", this.state.snap.id);
+                }}>Tag</div>
               &nbsp;
-              {this.tags()}
-          </div>)
-      }
+                {this.tags()}
+            </div>)
+        }
     }
     render() {
         if (this.state.isActive) {
             return (<div className="pv_window">
                 <div className="pv_head">
-                    <div className="pv_nohandle center" style={{ marginLeft: '5rem' }}>
+                   
+                    <div className="pv_nohandle center" style={{ marginLeft: '5rem',justifyContent: 'flex-end' }}>
                         <BarButton icon="Control_GoBack" onClick={() => {
                             //closing preview
                             window.actions('CLOSE_PREVIEW');
                         }} />
-                    </div>
+                        </div>
+                         <div className="pv_handle"></div>
                     <div className="pv_handle center base-regular size-xs">{this.getTitle()}</div>
                     <div className="pv_nohandle center">
-                        <BarButton icon="Control_Info" onClick={() => {
+                    <BarButton icon="TabBar_More" selected={this.state.showTbar} onClick={() => {
                             var state = this.state;
                             if (this.state.showTbar) {
                                 state.showTbar = false
@@ -289,6 +291,16 @@ class Preview extends React.Component {
                                 state.showTbar = true
                             }
                             this.setState(state);
+                        }} />
+                        <BarButton icon="Control_Info" selected={this.state.showTags} onClick={() => {
+                           var state = this.state;
+                           if (this.state.showTags) {
+                               state.showTags = false
+                           }
+                           else {
+                               state.showTags = true
+                           }
+                           this.setState(state);
                         }} /><BarButton icon="Control_Share" />
                         <BarButton icon="Navigation_Trash" onClick={() => {
                             var toDel = this.state.id;

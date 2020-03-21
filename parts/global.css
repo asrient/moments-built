@@ -8,6 +8,9 @@
     border:0.5px rgba(0, 0, 0, 0.10) solid;
     box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.28);
 }
+.bar_butt_selected{
+  background: #0000003d;
+}
 .bar_butt:hover{
     background: rgba(233,231,233,0.6);
 }

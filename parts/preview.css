@@ -13,7 +13,7 @@ grid-template-rows: 2.5rem auto;
    background: #f1f1f1;
    border-bottom:1.4px rgba(0, 0, 0, 0.1) solid;
    display: grid;
-   grid-template-columns: 13rem auto 13rem;
+   grid-template-columns: 10rem 5rem auto 15rem;
 }
 .pv_handle{
     -webkit-app-region: drag;
