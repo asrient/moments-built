@@ -34,43 +34,55 @@ class Preview extends React.Component {
             else if (state.id == null) {
                 state.id = data.id;
             }
+            var allSnaps = [];
             if (data.context == 'timeline') {
-                var allSnaps = window.state.timeline.snaps();
-                var ind = allSnaps.findIndex((snp) => {
-                    if (snp.id == state.id) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
+                allSnaps = window.state.timeline.snaps();
+            }
+            else if (data.context.split(':')[0] == 'tag') {
+                var tagId = data.context.split(':')[1];
+                var list = window.state.tags.list();
+                var ind = list.findIndex((tag) => {
+                    return tag.id == tagId
                 })
                 if (ind >= 0) {
-                    var count = 0;
-                    state.snap = allSnaps[ind];
-                    state.limits = { left: false, right: false };
-                    for (var i = ind - 5; i <= ind + 5; i++) {
-                        if (allSnaps[i] != undefined) {
-                            if (i == ind) {
-                                state.snapInd = count;
-                            }
-                            count++;
-                            state.snaps.push(allSnaps[i]);
+                    allSnaps = list[ind].snaps;
+                }
+            }
+            var ind = allSnaps.findIndex((snp) => {
+                if (snp.id == state.id) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            })
+            if (ind >= 0) {
+                var count = 0;
+                state.snap = allSnaps[ind];
+                state.limits = { left: false, right: false };
+                for (var i = ind - 5; i <= ind + 5; i++) {
+                    if (allSnaps[i] != undefined) {
+                        if (i == ind) {
+                            state.snapInd = count;
                         }
-                        else {
-                            if (i == ind + 1) {
-                                state.limits.right = true;
-                            }
-                            else if (i == ind - 1) {
-                                state.limits.left = true;
-                            }
+                        count++;
+                        state.snaps.push(allSnaps[i]);
+                    }
+                    else {
+                        if (i == ind + 1) {
+                            state.limits.right = true;
+                        }
+                        else if (i == ind - 1) {
+                            state.limits.left = true;
                         }
                     }
                 }
-                else {
-                    console.error("PREVIEW: snap not in context");
-                    window.actions('CLOSE_PREVIEW');
-                }
             }
+            else {
+                console.error("PREVIEW: snap not in context");
+                window.actions('CLOSE_PREVIEW');
+            }
+
         }
         else {
             state.id = null;
@@ -123,8 +135,8 @@ class Preview extends React.Component {
             return (<div className="pv_picView" style={{ backgroundImage: "url(" + this.state.snap.url + ")", height: ht }}></div>)
         }
         else {
-            return (<video src={this.state.snap.url} style={{ maxHeight: ht,maxWidth: '100%' }}
-             controls autoPlay ></video>)
+            return (<video src={this.state.snap.url} style={{ maxHeight: ht, maxWidth: '100%' }}
+                controls autoPlay ></video>)
         }
     }
 

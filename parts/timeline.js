@@ -15,6 +15,9 @@ class Timeline extends React.Component {
         super(props);
         this.state = { count: null, srcCount:0, thumbSize: 11, snaps: [], showCount: 0 };
     }
+    componentWillUnmount(){
+        this.unsub();
+    }
     componentDidMount = () => {
         this.props.setBar(
             <div id="tl_bar">
@@ -47,7 +50,7 @@ class Timeline extends React.Component {
                             window.actions('ADD_SNAP');
                         }} />
                     <BarButton icon="Navigation_Trash" />
-                    <BarButton icon="QuickActions_Share" onClick={() => { this.getSnaps() }} />
+                    <BarButton icon="QuickActions_Share" />
                 </div>
             </div>)
         recs.count({}, (err, count) => {
@@ -56,7 +59,7 @@ class Timeline extends React.Component {
             // console.log(state);
             this.setState(state);
         })
-        window.state.subscribe(() => {
+        this.unsub=window.state.subscribe(() => {
             if(this.state.srcCount==window.state.getState().sources.length)
             this.parseData();
             else
@@ -164,7 +167,7 @@ class Timeline extends React.Component {
         return html;
     }
     getGrid2 = (snaps, key, title, location) => {
-        return ((<ThumbsGrid snaps={snaps} key={key} thumbSize={this.state.thumbSize + 'rem'} title={title} location={location} onThumbClick={(id) => {
+        return ((<ThumbsGrid snaps={snaps} context="timeline" key={key} thumbSize={this.state.thumbSize + 'rem'} title={title} location={location} onThumbClick={(id) => {
             window.actions('PREVIEW_SNAP', { id, context: 'timeline' });
         }} />))
     }

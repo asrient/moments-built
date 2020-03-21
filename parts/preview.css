@@ -5,12 +5,12 @@ left:0px;
 height: 100vh;
 width:100vw;
 z-index: 7;
-background: rgb(231, 231, 231);
+background: rgb(245, 245, 245);
 display: grid;
 grid-template-rows: 2.5rem auto;
 }
 .pv_head{
-   background: linear-gradient(rgba(233,231,233,0.6),rgba(187,186,187,0.6));
+   background: #f1f1f1;
    border-bottom:1.4px rgba(0, 0, 0, 0.1) solid;
    display: grid;
    grid-template-columns: 13rem auto 13rem;

@@ -14,8 +14,8 @@ function reducers(state = 0, action) {
                         tags: {}
                     })
             });
-            console.log(sources);
             return ({
+                nav:{page:'timeline',relay:null},
                 sources,
                 preview: { isActive: false, id: null, context: null },
                 window: { isActive: false, content: null, relay: null }
@@ -36,6 +36,12 @@ var state = {
     subscribe: store.subscribe,
     init: function () {
         store.dispatch({ type: 'INIT' })
+    },
+    openPage:function(page,relay){
+        var data = store.getState();
+        data.nav.page=page;
+        data.nav.relay=relay;
+        store.dispatch({ type: 'UPDATE', state: data });
     },
     tags: {
         list: function () {
@@ -78,7 +84,7 @@ var state = {
 
                         var noTags = Object.keys(tags).length;
                         Object.keys(tags).forEach((tagId, tagInd) => {
-                            console.log(tagId, tags[tagId].snaps);
+                            //console.log(tagId, tags[tagId].snaps);
                             var snaps = tags[tagId].snaps;
                             var snapRecs = [];
                             var len = snaps.length;
@@ -180,6 +186,7 @@ var state = {
                     })
                     if (!data.sources[srcInd].tags[tagId].snaps.length) {
                         //it was the last item and its removed, remove the tag
+                        console.log("last item is removed, remove the tag");
                         delete data.sources[srcInd].tags[tagId];
                     }
                 })

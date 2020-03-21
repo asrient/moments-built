@@ -18,15 +18,26 @@
 #win{
     position: relative;
     z-index: 5;
-    height: 80vh;
     max-height: 60rem;
-    width: 35rem;
-    background-color: rgb(255, 255, 255);
+    max-width: 35rem;
+    background-color: #ffffff80;
+    backdrop-filter: blur(20px);
     border-radius: 0.6rem;
     box-shadow: 0px 0px 14px 9px #00000042;
+    overflow-x: hidden;
+    overflow-y: auto;
+    animation-name: pop;
+  animation-duration: 250ms;
+}
+@keyframes pop{
+    0% {transform: scale(0.7);}
+    50%{transform: scale(1.1);}
+    100% {transform: scale(1);}
 }
 .ad{
     padding: 1.2rem;
+    width: 30rem;
+    height: 80vh;
 }
 .ad_grp{
     margin:1rem;
@@ -41,4 +52,49 @@
     border: #b8d6ff solid thin;
     margin: 0.3rem;
     border-radius: 0.5rem;
+}
+.at{
+    padding: 1.2rem;
+    width: 25rem;
+    height: 15rem;
+}
+.at_title{
+    padding: 0.5rem 0rem;
+}
+.at_input{
+    padding:0.4rem;
+    border:none;
+    margin:0.2rem 0.3rem;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+    color: #00000069;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.575);
+}
+.at_done_holder{
+    bottom: 1rem;
+    right: 1.5rem;
+    position: absolute;
+}
+.at_input:focus{
+    box-shadow: 0 0 3px 4px #007cff63;
+    animation-name: focus;
+  animation-duration: 350ms;
+  animation-direction: alternate-reverse;
+}
+@keyframes focus{
+    0% { box-shadow: 0 0 8px 9px #51a5ff50;}
+    100% { box-shadow: 0 0 3px 4px #007cff63;}
+}
+.at_tag{
+    padding:0.2rem 0.3rem;
+    border-bottom:rgba(0, 0, 0, 0.068) solid thin;
+}
+.at_tag:hover{
+    background-color: rgba(0, 0, 0, 0.034);
+}
+.at_tags{
+    max-height: 5.2rem;
+    overflow-x: hidden;
+    overflow-y: auto;
 }

@@ -17,6 +17,18 @@ function actions(act, data) {
             }
         });
     }
+    if (act == 'OPEN_PAGE') {
+        var relay=null;
+        var pg=data;
+        if(data.split(':')[0]=='tags'){
+            pg='tags';
+          relay=data.split(':')[1];
+          if(relay==undefined){
+              relay=null;
+          }
+        }
+       window.state.openPage(pg,relay);
+    }
     else if (act == "DELETE_SNAP") {
         //only one id at a time
         var b = data.split(':');
@@ -86,6 +98,7 @@ function actions(act, data) {
                         }
                         else {
                             //no snaps left in the tag, remove it
+                            //console.log("no snaps left in the tag, remove it from db");
                             window.tags.del(tagId);
                         }
                         var tagInd = snap.tags.findIndex((tg) => {
@@ -113,6 +126,9 @@ function actions(act, data) {
     }
     else if (act == "ADD_DEVICE") {
         window.state.window.open('ADD_DEVICE', data);
+    }
+    else if (act == "ADD_TAG") {
+        window.state.window.open('ADD_TAG', data);
     }
     else if (act == "CLOSE_WINDOW") {
         window.state.window.close();

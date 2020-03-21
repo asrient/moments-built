@@ -15,19 +15,24 @@ class Tags extends React.Component {
         super(props);
         this.state = { page: 'home', tags: [] };
     }
+    componentWillUnmount(){
+        this.unsub();
+    }
     componentDidMount = () => {
         window.state.tags.getList();
         this.parseState();
-        window.state.subscribe(() => {
+        this.unsub=window.state.subscribe(() => {
             this.parseState();
         })
     }
     parseState() {
-        this.state.tags = window.state.tags.list();
-        /*this.state.tags = [
-            { id: "Mountains", snaps: ['local:645dcd53f1', 'local:d46a89a920'], modified_on: 6887 },
-            { id: "Birthdays", snaps: ['local:a097e4a321', 'local:ec4e5e8533','local:645dcd53f1'], modified_on: 476 }
-        ]*/
+        var data = window.state.getState();
+        if (data.nav.page == 'tags') {
+            if (data.nav.relay != null) {
+                this.state.page = data.nav.relay;
+            }
+            this.state.tags = window.state.tags.list();
+        }
         this.setState(this.state);
     }
     showTagList(selected = null) {
@@ -60,10 +65,12 @@ class Tags extends React.Component {
         })
         if (tagInd >= 0) {
             var snaps = this.state.tags[tagInd].snaps.map((snap) => {
-                console.log(snap)
+                //console.log(snap)
                 return ({ id: snap.id, thumb: snap.thumb_url, type: snap.type })
             })
-            return (<ThumbsGrid snaps={snaps} />)
+            return (<ThumbsGrid snaps={snaps} context={'tag:' + tagId} onThumbClick={(id) => {
+                window.actions('PREVIEW_SNAP', { id, context: 'tag:' + tagId })
+            }} />)
         }
     }
     showPage(tagId) {
@@ -84,7 +91,9 @@ class Tags extends React.Component {
 
                 </div>
                 <div style={{ height: '7.6rem' }}></div>
-                {this.showGrid(tagId)}
+                <div style={{ padding: '0.7rem' }}>
+                    {this.showGrid(tagId)}
+                </div>
             </div>
         </div>)
     }

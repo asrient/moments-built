@@ -11,6 +11,13 @@ border-radius:0.3rem;
 .thumb:hover{
 border:1px rgba(196, 196, 196, 0.486) solid;
 }
+.thumb_selected{
+    transform: scale(1.1);
+    box-shadow: 0px 0px 11px 3px #00000045;
+    border:none !important;
+    transition-property: all;
+    transition-duration: 40ms;
+}
 .thumbs_grid{
     display:grid;
     grid-template-columns: repeat(auto-fill,minmax(8rem, 1fr));
@@ -26,4 +33,48 @@ border:1px rgba(196, 196, 196, 0.486) solid;
     font-size: 0.9rem;
     padding-left: 0.7rem;
     margin-bottom: 0.5rem;
+}
+.th_menu{
+    background-color: rgba(228, 228, 228, 0.664) !important;
+    backdrop-filter: blur(20px);
+    box-shadow: 0px 0px 9px 2px #00000059;
+    width:14rem;
+    border-radius: 0.6rem !important;
+    color:rgb(20, 20, 20)!important;
+}
+.th_menu .tippy-arrow{
+    color: rgba(228, 228, 228, 0.664)!important;
+}
+.th_menu .tippy-content{
+    max-height: 18rem;
+    padding: 6px 0px;
+}
+.th_menu_opts{
+    font-size:0.9rem;
+    color:#0000007a;
+}
+.th_menu_opt{
+    border-bottom: rgba(0, 0, 0, 0.06) solid thin;
+    padding: 0.5rem 0.5rem;
+}
+.th_menu_opt:hover{
+    background-color: #e0e0e05e;
+    color:rgba(0, 0, 0, 0.726);
+}
+.th_menu_opt_tag{
+    padding: 0.4rem 0.7rem;
+    font-size:0.8rem;
+    color:#0000003d;
+    display: flex;
+    align-items: center;
+}
+.th_menu_opt_tag:hover{
+    background-color: #e0e0e05e;
+}
+.th_menu_opt_title{
+border-bottom: none;
+padding-left:1rem;
+}
+.th_menu_opt_grp{
+    border-bottom: rgba(0, 0, 0, 0.06) solid thin;
 }

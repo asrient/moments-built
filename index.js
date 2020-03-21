@@ -161,6 +161,12 @@ class Nav extends React.Component {
         super(props);
         this.state = { pageBarHtml: null, currentPage: 'timeline', relayToPage: null }
     }
+    componentDidMount(){
+        this.parseState();
+        window.state.subscribe(()=>{
+            this.parseState();
+        })
+    }
     getPageBar = () => {
         if (this.state.pageBarHtml != null) {
             return (
@@ -181,10 +187,15 @@ class Nav extends React.Component {
         state.pageBarHtml = html;
         this.setState(state);
     }
-    setPage = (page, relay) => {
+    parseState = () => {
+        var data=window.state.getState();
+        var page=data.nav.page;
+        var relay=data.nav.relay;
         if (allPages.includes(page)) {
+            if(this.state.currentPage!=page){
+                this.state.pageBarHtml=null;
+            }
             this.state.currentPage = page;
-            this.state.pageBarHtml = null;
             if (relay == undefined) {
                 relay = null;
             }
@@ -195,15 +206,18 @@ class Nav extends React.Component {
             console.error('invalid page to set');
         }
     }
+    setPage(page){
+        window.actions("OPEN_PAGE",page);
+    }
     getPage = () => {
         if (this.state.currentPage == 'timeline') {
-            return (<Timeline setBar={this.setPageBar} openPage={this.setPage} preview={opener} param={this.state.relayToPage} />)
+            return (<Timeline setBar={this.setPageBar} relay={this.state.relayToPage} />)
         }
         else if (this.state.currentPage == 'places') {
             return (<div className="center" style={{ height: '100vh', fontSize: '80vh' }}>🗺</div>)
         }
         else if (this.state.currentPage == 'tags') {
-            return (<Tags setBar={this.setPageBar} openPage={this.setPage} param={this.state.relayToPage} />)
+            return (<Tags setBar={this.setPageBar} relay={this.state.relayToPage} />)
         }
         else {
             return (<div className="center" style={{ height: '16rem' }}>🚧</div>)
