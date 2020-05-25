@@ -2,6 +2,8 @@ import $ from "jquery";
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
+import "./common.css";
+
 import Timeline from "./parts/timeline.js";
 import Preview from "./parts/preview.js";
 import Tags from "./parts/tags.js";
@@ -13,13 +15,11 @@ import "./styles.css";
 import Tippy from '@tippyjs/react';
 import 'tippy.js/dist/tippy.css';
 
-window.srcs = pine.data.dictionary('sources.json');
-window.tags = pine.data.dictionary('tags.json');
-
 if (window.srcs.get('local') == undefined) {
     console.log("Initializing sources..");
-    window.srcs.set('local', { isActive: true, count: 0, type: 'local', name: "Computer", icon: "common://icons/SystemEntity_Computer.png" });
+    window.srcs.set('local', { isActive: true, count: 0, type: 'local', name: "Computer", icon: "assets://icons/SystemEntity_Computer.png" });
 }
+
 state.init();
 
 window.state = state;
@@ -29,10 +29,10 @@ opener = function () {
     console.error("opener not initialized yet");
 }
 
-pine.ipc.on('LOGIN_SUCCESS', (e, arg) => {
+/*pine.ipc.on('LOGIN_SUCCESS', (e, arg) => {
     console.log('LOGIN SUCCESS', arg);
     window.actions('REGISTER_GOOGLEPHOTOS', arg);
-})
+})*/
 
 class Switcher extends React.Component {
     /** @props : change, selected
@@ -69,11 +69,11 @@ class Switcher extends React.Component {
 class DeviceMenu extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {isSrcMenuVisible: false,srcs: window.srcs.get()}
+        this.state = { isSrcMenuVisible: false, srcs: window.srcs.get() }
     }
-    componentDidMount(){
+    componentDidMount() {
         window.state.subscribe(() => {
-            this.state.srcs=window.srcs.get();
+            this.state.srcs = window.srcs.get();
             this.setState(this.state);
         })
     }
@@ -114,7 +114,7 @@ class DeviceMenu extends React.Component {
         }
         return (<div className="ink-black size-xs base-regular">
             <div className="center-col size-xs" style={{ padding: "0.8rem 0.4rem" }}>
-                <div><Icon className="size-l" src="source://icons/connectedDevices.png" /></div><div>Connected devices</div>
+                <div><Icon className="size-l" src="assets://icons/connectedDevices.png" /></div><div>Connected devices</div>
             </div>
             <div className="srcm_grp_title">THIS DEVICE</div>
             <div>{opts.local}</div>
@@ -161,9 +161,9 @@ class Nav extends React.Component {
         super(props);
         this.state = { pageBarHtml: null, currentPage: 'timeline', relayToPage: null }
     }
-    componentDidMount(){
+    componentDidMount() {
         this.parseState();
-        window.state.subscribe(()=>{
+        window.state.subscribe(() => {
             this.parseState();
         })
     }
@@ -188,12 +188,12 @@ class Nav extends React.Component {
         this.setState(state);
     }
     parseState = () => {
-        var data=window.state.getState();
-        var page=data.nav.page;
-        var relay=data.nav.relay;
+        var data = window.state.getState();
+        var page = data.nav.page;
+        var relay = data.nav.relay;
         if (allPages.includes(page)) {
-            if(this.state.currentPage!=page){
-                this.state.pageBarHtml=null;
+            if (this.state.currentPage != page) {
+                this.state.pageBarHtml = null;
             }
             this.state.currentPage = page;
             if (relay == undefined) {
@@ -206,8 +206,8 @@ class Nav extends React.Component {
             console.error('invalid page to set');
         }
     }
-    setPage(page){
-        window.actions("OPEN_PAGE",page);
+    setPage(page) {
+        window.actions("OPEN_PAGE", page);
     }
     getPage = () => {
         if (this.state.currentPage == 'timeline') {
@@ -233,7 +233,7 @@ class Nav extends React.Component {
                         <div id="handle2">
                             <div className="handle"></div>
                             <div className="center">
-                            <DeviceMenu/>
+                                <DeviceMenu />
                             </div>
                             <div className="handle"></div>
                         </div>
@@ -260,3 +260,63 @@ ReactDOM.render(
     , document.getElementById('root')
 );
 
+
+ win.resize = function () {
+    if (win.isMaximized()) {
+        win.unmaximize();
+    }
+    else {
+        win.maximize();
+    }
+}
+win.showControls = function () {
+    $('#controls').css({
+        display: 'flex'
+    })
+    $('#controls').html(getControls());
+}
+win.hideControls = function () {
+    $('#controls').css({
+        display: 'none'
+    })
+}
+function getControls() {
+    var red = '<div class="bar_butts bar_butt_red" onClick=win.close()></div>';
+    var yellow = '<div class="bar_butts bar_butt_yellow" onClick=win.minimize()></div>';
+    var green = '<div class="bar_butts bar_butt_green" onClick=win.resize()></div>';
+    var grey = '<div class="bar_butts" ></div>';
+    var controls = red;
+    if (win.isMinimizable()) {
+        controls += yellow;
+    } else {
+        controls += grey;
+    }
+    if (win.isMaximizable() && win.isResizable()) {
+        controls += green;
+    }
+    return (controls)
+}
+function getControlsDisabled() {
+    var grey = '<div class="bar_butts" ></div>';
+    var controls = grey + grey;
+    if (win.isMaximizable()) {
+        controls += grey;
+    }
+    return (controls)
+}
+
+$('#controls').html(getControls());
+
+win.on('focus', () => {
+    $('#controls').html(getControls());
+})
+
+win.updateControls = function () {
+    $('#controls').html(getControls());
+}
+
+win.on('blur', () => {
+    $('#controls').html(getControlsDisabled());
+})
+
+win.show();

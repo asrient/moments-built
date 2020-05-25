@@ -31,7 +31,7 @@ class Thumb extends React.Component {
                 this.close();
                 window.actions('OPEN_PAGE','tags:'+tagId);
             }}>
-                <Icon className="size-xs" src="common://icons/tag.png"/>&nbsp;{tagId}
+                <Icon className="size-xs" src="assets://icons/tag.png"/>&nbsp;{tagId}
                 </div>)
             })
             return(<div className="th_menu_opt_grp">

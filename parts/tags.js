@@ -49,7 +49,7 @@ class Tags extends React.Component {
                     this.setState(this.state);
                 }}>
                     <div className="center">
-                        <Icon className="size-xs" src="common://icons/tag.png" />&nbsp;
+                        <Icon className="size-xs" src="assets://icons/tag.png" />&nbsp;
             {tag.id}
                     </div>
 
@@ -85,7 +85,7 @@ class Tags extends React.Component {
                         <div className="tg_view_back size-s center" onClick={() => {
                             this.state.page = 'home';
                             this.setState(this.state);
-                        }}><Icon className="size-xs" style={{ opacity: 0.5 }} src="common://icons/Control_GoBack.png" /></div>
+                        }}><Icon className="size-xs" style={{ opacity: 0.5 }} src="assets://icons/Control_GoBack.png" /></div>
                         <div className="size-l ink-black base-regular">{tagId}</div>
                     </div>
 
@@ -106,7 +106,7 @@ class Tags extends React.Component {
                     this.state.page = tag.id;
                     this.setState(this.state);
                 }}>
-                    <div><Icon className="size-m" src="common://icons/tag.png" /></div>
+                    <div><Icon className="size-m" src="assets://icons/tag.png" /></div>
                     <div className="size-s ink-black base-semilight">{tag.id}</div>
                     <div className="size-xs ink-dark base-light">{tag.snaps.length}&nbsp;snaps</div>
                 </div>

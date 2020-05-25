@@ -2,9 +2,6 @@
  * @ASRIENT 24.2.20
  */
 
-var fs = pine.include('fs');
-var crypto = pine.include('crypto');
-
 const imgTypes = ['image/jpeg', 'image/png'];
 
 function removeSnap(id, cb) {
@@ -27,8 +24,8 @@ function removeSnap(id, cb) {
                     window.tags.del(tagId);
                 }
             })
-            pine.data.files.delete('media/' + snap.filename, () => {
-                pine.data.files.delete('thumbs/' + snap.filename, () => {
+            fs.unlink('media/' + snap.filename, () => {
+                fs.unlink('thumbs/' + snap.filename, () => {
                     recs.remove({ id }, {}, () => {
                         cb();
                     })

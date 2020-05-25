@@ -2,8 +2,6 @@ import $ from "jquery";
 import addSnap from "./addSnap.js";
 import deleteSnap from "./deleteSnap.js";
 
-var crypto = pine.include('crypto');
-
 function code(n = 5) {
     return crypto.randomBytes(n).toString('hex');
 }
@@ -18,16 +16,16 @@ function actions(act, data) {
         });
     }
     if (act == 'OPEN_PAGE') {
-        var relay=null;
-        var pg=data;
-        if(data.split(':')[0]=='tags'){
-            pg='tags';
-          relay=data.split(':')[1];
-          if(relay==undefined){
-              relay=null;
-          }
+        var relay = null;
+        var pg = data;
+        if (data.split(':')[0] == 'tags') {
+            pg = 'tags';
+            relay = data.split(':')[1];
+            if (relay == undefined) {
+                relay = null;
+            }
         }
-       window.state.openPage(pg,relay);
+        window.state.openPage(pg, relay);
     }
     else if (act == "DELETE_SNAP") {
         //only one id at a time
@@ -157,22 +155,23 @@ function actions(act, data) {
         window.state.init();
     }
     else if (act == "GOOGLE_PHOTOS_LOGIN") {
+        /////////////////////////////////////////////////
         window.actions("CLOSE_WINDOW");
-        var win = pine.app.createWindow();
-        //win.setSkipTaskbar(true);
-        win.setAlwaysOnTop(true);
-        win.setMaximizable(false);
-        win.setMinimizable(false);
-        win.setSize(500, 700);
-        win.center();
-        win.setMovable(false);
-        win.setResizable(false);
-        win.loadURL('https://moments.kikoing.co.in/auth', { userAgent: 'Chrome' });
+        var loginWin = pine.app.createWindow();
+        //loginWin.setSkipTaskbar(true);
+        loginWin.setAlwaysOnTop(true);
+        loginWin.setMaximizable(false);
+        loginWin.setMinimizable(false);
+        loginWin.setSize(500, 700);
+        loginWin.center();
+        loginWin.setMovable(false);
+        loginWin.setResizable(false);
+        loginWin.loadURL('https://moments.kikoing.co.in/auth', { userAgent: 'Chrome' });
         pine.ipc.once('LOGIN_SUCCESS', (e, arg) => {
-            win.close();
+            loginWin.close();
         })
         pine.ipc.once('LOGIN_ERROR', (e, arg) => {
-            window.setTimeout(() => { win.close(); }, 4000)
+            window.setTimeout(() => { loginWin.close(); }, 4000)
         })
     }
     else if (act == "DELETE_SOURCE") {

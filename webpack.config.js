@@ -3,8 +3,8 @@ const webpack = require("webpack");
 
 module.exports = {
   entry: {
-    moments:"./index.js",
-},
+    moments: "./index.js",
+  },
   mode: "development",
   module: {
     rules: [
@@ -15,16 +15,16 @@ module.exports = {
         options: { presets: ["@babel/env"] }
       },
       {
-        test:/\.(s*)css$/,
-        use: ["style-loader", "css-loader",'sass-loader']
+        test: /\.(s*)css$/,
+        use: ["style-loader", "css-loader", 'sass-loader']
       }
     ]
   },
   resolve: { extensions: ["*", ".js", ".jsx"] },
   output: {
-    path: "H:\\AA\\pine\\app\\data\\apps\\moments\\source",
+    path: "H:\\AA\\moments\\desktop\\bundle",
     publicPath: "/",
     filename: "[name].js"
   },
- // plugins: [new webpack.HotModuleReplacementPlugin()]
+  // plugins: [new webpack.HotModuleReplacementPlugin()]
 };

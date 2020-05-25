@@ -252,7 +252,7 @@ class Preview extends React.Component {
                     }}>{tagId}</div>&nbsp;&nbsp;
                     <div className="pv_tag_x center" onClick={() => {
                         window.actions("UNTAG_SNAP", { snapId: this.state.snap.id, tagId })
-                    }}><Icon className="center" src="common://icons/Freestanding_StopProgress.png" /></div></div>)
+                    }}><Icon className="center" src="assets://icons/Freestanding_StopProgress.png" /></div></div>)
             })
             return (<div className="center">{html}</div>)
         }

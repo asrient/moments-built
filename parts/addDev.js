@@ -23,7 +23,7 @@ class AddDev extends React.Component {
             <div className="ad_grp center-col">
               <div className="ink-black size-s base-semilight">Connect to Google Photos</div>
               <br/>
-            <div><Icon src="source://icons/google-photos.svg" className="size-xl"/></div>
+            <div><Icon src="assets://icons/google-photos.svg" className="size-xl"/></div>
             <br/>
             <div style={{padding:"0.5rem 1rem"}} className="ink-dark size-xs base-light">
                 View all your photos from your Google Photos here.</div>
