@@ -19,6 +19,11 @@ if (window.srcs.get('local') == undefined) {
     console.log("Initializing sources..");
     window.srcs.set('local', { isActive: true, count: 0, type: 'local', name: "Computer", icon: "assets://icons/SystemEntity_Computer.png" });
 }
+if (!fs.existsSync(filesDir)) {
+    fs.mkdirSync(filesDir + '/tmp', { recursive: true });
+    fs.mkdirSync(filesDir + '/media', { recursive: true });
+    fs.mkdirSync(filesDir + '/thumbs', { recursive: true });
+}
 
 state.init();
 
