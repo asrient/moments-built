@@ -1,21 +1,22 @@
+const QUERY_LIMIT = 10;
 
 const devices = {};
 const devEvents = new EventEmitter();
 
-class Local {
+class Peer {
     constructor() {
-        this.type = 'local';
+        this.type = 'airPeer';
     }
-    getTimelineList(cb, skip, token) {
+    getTimelineList(skip, cb) {
 
     }
     getTagsCatalog(cb) {
 
     }
-    getTagsList(cb) {
+    getTagsList(tag, cb) {
 
     }
-    getSnapInfo(sanpId, cb) {
+    getSnapInfo(snapId, cb) {
 
     }
     getSnapInfoBatch(snapIds, cb) {
@@ -32,21 +33,29 @@ class Local {
     }
 }
 
-class Peer {
+class Local {
     constructor() {
-        this.type = 'airPeer';
+        this.type = 'local';
     }
-    getTimelineList(cb, skip, token) {
-
+    getTimelineList(skip, cb) {
+        recs.find({}).sort({ taken_on: -1 }).skip(skip).limit(QUERY_LIMIT).exec((err, snaps) => {
+            var list = [];
+            snaps.forEach(snap => {
+                list.push({ id: snap.id, taken_on: snap.taken_on })
+            });
+            cb(list);
+        })
     }
     getTagsCatalog(cb) {
 
     }
-    getTagsList(cb) {
+    getTagsList(tag, cb) {
 
     }
-    getSnapInfo(sanpId, cb) {
-
+    getSnapInfo(snapId, cb) {
+        recs.findOne({ id: snapId }, (err, snap) => {
+           cb(snap);
+        })
     }
     getSnapInfoBatch(snapIds, cb) {
 
@@ -63,7 +72,18 @@ class Peer {
 }
 
 function addDevice(info) {
-
+    if (devices[info.id] == undefined) {
+        var id = info.id;
+        if (id == 'local') {
+            devices[id] = new Local();
+        }
+        else if (id = 'gPhotos') {
+            devices[id] = new GPhotos();
+        }
+        else {
+            devices[id] = new Peer();
+        }
+    }
 }
 
 class Device {
@@ -74,17 +94,17 @@ class Device {
         }
         this.dev = devices[devId];
     }
-    getTimelineList(cb, skip, token) {
-
+    getTimelineList(skip, cb) {
+        devices[this.devId].getTimelineList(skip, cb);
     }
     getTagsCatalog(cb) {
 
     }
-    getTagsList(cb) {
+    getTagsList(tag, cb) {
 
     }
-    getSnapInfo(sanpId, cb) {
-
+    getSnapInfo(snapId, cb) {
+        devices[this.devId].getSnapInfo(snapId, cb);
     }
     getSnapInfoBatch(snapIds, cb) {
 
