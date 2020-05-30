@@ -10,14 +10,13 @@ function reducers(state = 0, action) {
             var keys = Object.keys(window.srcs.get());
             var sources = {};
             keys.forEach(key => {
-                if (window.srcs.get(key + '.isActive'))
-                    sources[key] = {
-                        id: key,
-                        sessionId: null,
-                        snaps: {},
-                        timeline: { list: null, skip: 0, isLoaded: false },
-                        tags: null
-                    }
+                sources[key] = {
+                    id: key,
+                    sessionId: null,
+                    snaps: {},
+                    timeline: { list: null, skip: 0, isLoaded: false },
+                    tags: null
+                }
                 addDevice(window.srcs.get(key));
             });
             return ({
@@ -56,10 +55,12 @@ var state = {
         store.dispatch({ type: 'UPDATE', state: data });
     },
     addSnaps: function (srcId, snaps) {
-
+        var dev = new Device(srcId);
+        dev.addSnaps(snaps);
     },
     removeSnaps: function (srcId, ids) {
-
+        var dev = new Device(srcId);
+        dev.removeSnaps(ids);
     },
     updateSnap: function (snapId, next) {
 
@@ -159,9 +160,9 @@ var state = {
         var devId = snapId.split('/')[0];
         var snapKey = snapId.split('/')[1];
         var dev = new Device(devId);
-        dev.getSnapInfo(snapKey,(snap)=>{
+        dev.getSnapInfo(snapKey, (snap) => {
             var st = store.getState();
-            st.sources[devId].snaps[snapKey]=snap;
+            st.sources[devId].snaps[snapKey] = snap;
             store.dispatch({ type: 'UPDATE', state: st });
         })
     },
@@ -228,11 +229,63 @@ devEvents.on('deviceConnected', () => {
 devEvents.on('deviceDisconnected', () => {
 
 })
-devEvents.on('addSnaps', () => {
-
+devEvents.on('addTimelineSnaps', (devId, _snaps) => {
+    /**
+     * Here we only update timeline
+     */
+    var st = store.getState();
+    var isChanged = false;
+    var snaps = _snaps.map((snap) => {
+        return ({ id: snap.id, taken_on: snap.taken_on });
+    })
+    if (st.sources[devId] != undefined) {
+        //make sure tl list is initialised
+        if (st.sources[devId].timeline.list != null) {
+            var prevList = st.sources[devId].timeline.list;
+            if (st.sources[devId].timeline.isLoaded) {
+                isChanged = true;
+                st.sources[devId].timeline.list = prevList.concat(snaps);
+                st.sources[devId].timeline.skip = st.sources[devId].timeline.skip + snaps.length;
+            }
+            else {
+                var lastTakenOn = prevList[prevList.length - 1].taken_on;
+                snaps.forEach((snap) => {
+                    if (snap.taken_on >= lastTakenOn) {
+                        isChanged = true;
+                        st.sources[devId].timeline.list.push(snap);
+                        st.sources[devId].timeline.skip++;
+                    }
+                })
+            }
+            if (isChanged) {
+                st.sources[devId].timeline.list.sort((a, b) => {
+                    return b.taken_on - a.taken_on;
+                })
+                store.dispatch({ type: 'UPDATE', state: st });
+            }
+        }
+    }
 })
-devEvents.on('removeSnaps', () => {
-
+devEvents.on('removeTimelineSnaps', (devId, snapIds) => {
+    var st = store.getState();
+    var isChanged = false;
+    if (st.sources[devId] != undefined) {
+        var prevList = st.sources[devId].timeline.list;
+        if (prevList != null) {
+            st.sources[devId].timeline.list = prevList.filter((snap) => {
+                if (snapIds.includes(snap.id)) {
+                    isChanged = true;
+                    st.sources[devId].timeline.skip--;
+                    return false;
+                }
+                else
+                    return true;
+            })
+        }
+    }
+    if (isChanged) {
+        store.dispatch({ type: 'UPDATE', state: st });
+    }
 })
 devEvents.on('updateSnap', () => {
 
@@ -241,9 +294,6 @@ devEvents.on('updateTagsCatalog', () => {
 
 })
 devEvents.on('updateTagsList', () => {
-
-})
-devEvents.on('updateTimelineList', () => {
 
 })
 

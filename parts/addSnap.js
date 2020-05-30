@@ -12,7 +12,7 @@ const media = {
         proceed = false;
         constructor(pth) {
             this.file = filesDir + '/' + pth;
-            const types = ['image/jpeg', 'image/png'];
+            const types = ['image/jpeg', 'image/png', 'image/jpg'];
             if (!types.includes(MIME.lookup(this.file))) {
                 this.file = null;
             }
@@ -110,7 +110,7 @@ const media = {
 
 
 
-const imgTypes = ['image/jpeg', 'image/png'];
+const imgTypes = ['image/jpeg', 'image/jpg', 'image/png'];
 
 function imgFormat(rec, cb) {
     rec.type = "image";
@@ -133,8 +133,9 @@ function imgFormat(rec, cb) {
             rec.height = info.height;
         }
         img.fixOrientation('media/' + rec.filename, () => {
+            rec.file_key = window.resources.register( filesDir + '/media/' + rec.filename);
             img.resize(200, 'thumbs/' + rec.filename, () => {
-                rec.thumb_url = 'files://thumbs/' + rec.filename;
+                rec.file_key = window.resources.register( filesDir + '/thumbs/' + rec.filename);
                 cb(rec);
             })
         })
@@ -178,12 +179,18 @@ function copy(pth, ind = 0, cb = function () { }) {
             var tmpPath = filesDir + '/' + tmp;
             fs.copyFile(pth, tmpPath, (err) => {
                 var dt = new Date();
-                var rec = { id: 'local:' + id, filename: id + ext, tags: [], size, url: 'files://media/' + id + ext, added_on: dt.getTime(), taken_on };
+                var rec = {
+                    id,
+                    filename: id + ext,
+                    tags: [],
+                    size,
+                    added_on: dt.getTime(),
+                    taken_on
+                };
                 var mime = media.getType(tmp);
                 if (imgTypes.includes(mime)) {
                     imgFormat(rec, (rec) => {
                         fs.unlink(tmpPath, () => {
-                            recs.insert(rec);
                             cb(ind, rec);
                         })
                     })
@@ -204,7 +211,7 @@ function copy(pth, ind = 0, cb = function () { }) {
 
 }
 
-function start(cb = function () { }) {
+function start() {
     electron.remote.dialog.showOpenDialog({
         properties: ['openFile', 'multiSelections'],
         buttonLabel: "Import",
@@ -215,14 +222,14 @@ function start(cb = function () { }) {
         ]
     }).then(result => {
         if (!result.canceled) {
-            var res = [];
+            var snaps = [];
             result.filePaths.forEach((pth, index) => {
                 copy(pth, index, (ind, rec) => {
-                    res.push(rec);
+                    snaps.push(rec);
                     if (ind + 1 == result.filePaths.length) {
                         //after last snap
                         console.log('import done');
-                        cb(ind + 1, res);
+                        window.state.addSnap('local', snaps);
                     }
                 });
             });

@@ -1,6 +1,5 @@
 import $ from "jquery";
 import addSnap from "./addSnap.js";
-import deleteSnap from "./deleteSnap.js";
 
 function code(n = 5) {
     return crypto.randomBytes(n).toString('hex');
@@ -8,12 +7,7 @@ function code(n = 5) {
 
 function actions(act, data) {
     if (act == 'ADD_SNAP') {
-        addSnap((c, snaps) => {
-            if (c) {
-                window.state.addSnaps('local', snaps);
-                //Broadcast event to other devices here
-            }
-        });
+        addSnap();
     }
     if (act == 'OPEN_PAGE') {
         var relay = null;
@@ -27,27 +21,11 @@ function actions(act, data) {
         }
         window.state.openPage(pg, relay);
     }
-    else if (act == "DELETE_SNAP") {
-        //only one id at a time
-        var b = data.split(':');
-        if (b[0] == 'local') {
-            deleteSnap([data], () => {
-                window.state.removeSnaps('local', [data]);
-                //Broadcast event to other devices here
-            });
-        }
-        else {
-            var type = window.srcs.get(b[0] + ".type");
-            if (type == 'airdevice') {
-                //
-            }
-            else {
-                console.warn("Cannot delete from cloud");
-            }
-        }
+    else if (act == "DELETE_SNAPS") {
+        window.state.removeSnaps(data);
     }
     else if (act == "TAG_SNAP") {
-        var dt = new Date();
+        /*var dt = new Date();
         var snapId = data.snapId;
         var tagId = data.tagId;
         var srcId = snapId.split(':')[0];
@@ -76,10 +54,10 @@ function actions(act, data) {
         }
         else {
             //steps for other sources
-        }
+        }*/
     }
     else if (act == "UNTAG_SNAP") {
-        var dt = new Date();
+       /* var dt = new Date();
         var snapId = data.snapId;
         var tagId = data.tagId;
         var srcId = snapId.split(':')[0];
@@ -114,7 +92,7 @@ function actions(act, data) {
         }
         else {
             //steps for other sources
-        }
+        }*/
     }
     else if (act == "PREVIEW_SNAP") {
         window.state.preview.open(data.id, data.context);
@@ -132,15 +110,15 @@ function actions(act, data) {
         window.state.window.close();
     }
     else if (act == "ACTIVATE_SOURCE") {
-        window.srcs.set(data + '.isActive', true);
-        window.state.init();
+        //window.srcs.set(data + '.isActive', true);
+        //window.state.init();
     }
     else if (act == "DEACTIVATE_SOURCE") {
-        window.srcs.set(data + '.isActive', false);
-        window.state.init();
+        //window.srcs.set(data + '.isActive', false);
+        //window.state.init();
     }
     else if (act == "REGISTER_GOOGLEPHOTOS") {
-        var srcId = code(2);
+        /*var srcId = code(2);
         window.srcs.set(srcId, {
             "name": "Google Photos",
             "icon": "source://icons/google-photos.svg",
@@ -152,11 +130,11 @@ function actions(act, data) {
             "expiry_date": data.expiry_date,
             "token_type": "Bearer"
         })
-        window.state.init();
+        window.state.init();*/
     }
     else if (act == "GOOGLE_PHOTOS_LOGIN") {
         /////////////////////////////////////////////////
-        window.actions("CLOSE_WINDOW");
+        /*window.actions("CLOSE_WINDOW");
         var loginWin = pine.app.createWindow();
         //loginWin.setSkipTaskbar(true);
         loginWin.setAlwaysOnTop(true);
@@ -172,10 +150,10 @@ function actions(act, data) {
         })
         pine.ipc.once('LOGIN_ERROR', (e, arg) => {
             window.setTimeout(() => { loginWin.close(); }, 4000)
-        })
+        })*/
     }
     else if (act == "DELETE_SOURCE") {
-        var src = window.srcs.get(data);
+       /* var src = window.srcs.get(data);
         if (src.type == 'cloud/google') {
             $.get('https://moments.kikoing.co.in/remove?id=' + src.id, (data) => {
                 if (data != undefined) {
@@ -194,7 +172,7 @@ function actions(act, data) {
             window.srcs.del(data);
             window.state.init();
         }
-
+*/
     }
 }
 
