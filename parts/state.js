@@ -1,21 +1,26 @@
-import { createStore, combineReducers } from 'redux'
+import { createStore } from 'redux'
 import { Photos } from "./gPhotos.js";
+import { Device, devEvents, addDevice } from "./devices.js";
+
+const MAX_LOADING_TIME = 6000;
 
 function reducers(state = 0, action) {
     switch (action.type) {
         case 'INIT': {
             var keys = Object.keys(window.srcs.get());
-            var sources = [];
+            var sources = {};
             keys.forEach(key => {
-                if (window.srcs.get(key + '.isActive'))
-                    sources.push({
-                        id: key,
-                        timeline: { snaps: [], skip: 0, nextPageToken: null, isLoading: false },
-                        tags: {}
-                    })
+                sources[key] = {
+                    id: key,
+                    sessionId: null,
+                    snaps: {},
+                    timeline: { list: null, skip: 0, isLoaded: false },
+                    tags: null
+                }
+                addDevice(window.srcs.get(key));
             });
             return ({
-                nav:{page:'timeline',relay:null},
+                nav: { page: 'timeline', relay: null },
                 sources,
                 preview: { isActive: false, id: null, context: null },
                 window: { isActive: false, content: null, relay: null }
@@ -31,357 +36,175 @@ function reducers(state = 0, action) {
 
 let store = createStore(reducers);
 
+function getSourceIds() {
+    var st = store.getState();
+    return Object.keys(st.sources);
+}
+
 var state = {
     getState: store.getState,
     subscribe: store.subscribe,
+    isTimelineLoading: false,
+    isTimelineInit: false,
     init: function () {
         store.dispatch({ type: 'INIT' })
     },
-    openPage:function(page,relay){
+    openPage: function (page, relay) {
         var data = store.getState();
-        data.nav.page=page;
-        data.nav.relay=relay;
+        data.nav.page = page;
+        data.nav.relay = relay;
         store.dispatch({ type: 'UPDATE', state: data });
     },
-    tags: {
-        list: function () {
-            var list = [];
-            var data = store.getState();
-            data.sources.forEach((src, srcInd) => {
-                Object.keys(src.tags).forEach((tagId) => {
-                    var ind = list.findIndex((tag) => {
-                        return tag.id == tagId
-                    })
-                    if (ind < 0) {
-                        //add this tag, not in the list
-                        src.tags[tagId].id = tagId;
-                        list.push(src.tags[tagId]);
-                    }
-                    else {
-                        //already in the list, add snaps
-                        list[ind].snaps = list[ind].snaps.concat(src.tags[tagId].snaps);
-                        if (list[ind].modified_on < src.tags[tagId].modified_on) {
-                            list[ind].modified_on = src.tags[tagId].modified_on;
-                        }
-                    }
-                })
-            })
-            list.sort((a, b) => {
-                return a.modified_on - b.modified_on;
-            })
-            return list;
-        },
-        getList: function (only = null) {
-            var data = store.getState();
-            //console.log("getting list", window.tags.get());
-            data.sources.forEach((srcd, srcInd) => {
-
-                if (only == null || only == srcd.id) {
-                    //console.log("getting ", srcd.id);
-                    var src = window.srcs.get(srcd.id);
-                    if (src.type == 'local') {
-                        var tags = window.tags.clone();
-
-                        var noTags = Object.keys(tags).length;
-                        Object.keys(tags).forEach((tagId, tagInd) => {
-                            //console.log(tagId, tags[tagId].snaps);
-                            var snaps = tags[tagId].snaps;
-                            var snapRecs = [];
-                            var len = snaps.length;
-                            var count = 0;
-                            snaps.forEach((snapId) => {
-                                recs.findOne({ id: snapId }, (err, snap) => {
-                                    if (snap != null) {
-                                        snapRecs.push(snap);
-                                    }
-                                    if (count >= len - 1) {
-                                        //last snap
-                                        tags[tagId].snaps = snapRecs;
-                                        if (tagInd == noTags - 1) {
-                                            //last tag
-                                            data = store.getState();
-                                            //console.log(tags);
-                                            data.sources[srcInd].tags = tags;
-                                            store.dispatch({ type: 'UPDATE', state: data });
-                                        }
-                                    }
-                                    count++;
-                                })
-                            })
-                        })
-                    }
-                    else {
-                        //for other sources
-                    }
-                }
-
-            })
-        },
-        updateList: function (srcId = 'local') {
-            //update a tag of a particular source
-            //use it after formation of a new tag or deletion of an existing one
-            //can also be used after renaming a tag or changing its properties like color or icon
-            console.log("DECRIPETED: use addSnaps/ removeSnaps instead")
-            this.getList(srcId)
-        },
-        tagSnap: function (snap, tagId) {
-            //use it to add a snap to tag snaps
-            console.log("DECRIPETED: use addSnaps instead")
-            var srcId = snap.id.split(':')[0];
-            var data = store.getState();
-            var srcInd = data.sources.findIndex((src) => {
-                return (srcId == src.id)
-            })
-            if (srcInd >= 0) {
-                if (data.sources[srcInd].tags[tagId] != undefined) {
-                    if (data.sources[srcInd].tags[tagId].snaps != null) {
-                        data.sources[srcInd].tags[tagId].snaps.push(snap);
-                        store.dispatch({ type: 'UPDATE', state: data });
-                    }
-                }
-            }
-        },
-        addSnaps: function (snaps) {
-            var data = store.getState();
-            snaps.forEach((snap) => {
-                var srcId = snap.id.split(':')[0];
-                var srcInd = data.sources.findIndex((src) => {
-                    return (srcId == src.id)
-                })
-                if (srcInd >= 0) {
-                    snap.tags.forEach((tagId) => {
-                        if (data.sources[srcInd].tags[tagId] != undefined) {
-                            var snapInd = data.sources[srcInd].tags[tagId].snaps.findIndex((snp) => {
-                                return (snp.id == snap.id)
-                            })
-                            if (snapInd < 0) {
-                                //snap not in the tag list yet
-                                data.sources[srcInd].tags[tagId].snaps.push(snap);
-                            }
-                            else {
-                                console.error("add snap to tag: snap already in the list, not adding again.");
-                            }
-                        }
-                        else {
-                            //tag not in the list, create new tag
-                            var dt = new Date();
-                            data.sources[srcInd].tags[tagId] = { snaps: [snap], modified_on: dt.getTime() }
-                        }
-                    })
-
-                }
-            })
-            store.dispatch({ type: 'UPDATE', state: data });
-        },
-        removeSnaps: function (snapIds) {
-            var data = store.getState();
-            snapIds.forEach((snapId) => {
-                var srcId = snapId.split(':')[0];
-                var srcInd = data.sources.findIndex((src) => {
-                    return (srcId == src.id)
-                })
-                Object.keys(data.sources[srcInd].tags).forEach((tagId) => {
-                    data.sources[srcInd].tags[tagId].snaps = data.sources[srcInd].tags[tagId].snaps.filter((snap) => {
-                        return (snapId != snap.id)
-                    })
-                    if (!data.sources[srcInd].tags[tagId].snaps.length) {
-                        //it was the last item and its removed, remove the tag
-                        console.log("last item is removed, remove the tag");
-                        delete data.sources[srcInd].tags[tagId];
-                    }
-                })
-            })
-            store.dispatch({ type: 'UPDATE', state: data });
-        },
-        untagSnap: function (snapId, tagId) {
-            console.log("DECRIPETED: use removeSnaps instead")
-            //use it to remove a snap from tag snaps
-            var srcId = snapId.split(':')[0];
-            var data = store.getState();
-            var srcInd = data.sources.findIndex((src) => {
-                if (srcId == src.id)
-                    return true
-                else
-                    return false
-            })
-            if (srcInd >= 0) {
-                if (data.sources[srcInd].tags[tagId] != undefined) {
-                    if (data.sources[srcInd].tags[tagId].snaps != null) {
-                        var snapInd = data.sources[srcInd].tags[tagId].snaps.findIndex((snap) => {
-                            return (snap.id == snapId)
-                        })
-                        if (snapInd >= 0) {
-                            data.sources[srcInd].tags[tagId].snaps.splice(snapInd, 1);
-                        }
-                        store.dispatch({ type: 'UPDATE', state: data });
-                    }
-                }
-            }
-        }
-    },
-    timeline: {
-        snaps: function (snapBuilder, loaderBuilder) {
-            var data = store.getState();
-            var snaps = [];
-            data.sources.forEach((src, srcInd) => {
-                src.timeline.snaps.forEach((snap, snpInd) => {
-                    var newSnap = snap;
-                    if (snapBuilder != undefined) {
-                        newSnap = snapBuilder(snap);
-                    }
-                    newSnap.taken_on = snap.taken_on;
-                    var lastSnp = false;
-                    if (snpInd == src.timeline.snaps.length - 1) {
-                        lastSnp = true;
-                    }
-                    var posFound = snaps.find((snp, ind) => {
-                        if (snp.taken_on < snap.taken_on) {
-                            snaps.splice(ind, 0, newSnap);
-                            if (lastSnp) {
-                                if (loaderBuilder != undefined) {
-                                    var loader = loaderBuilder(src.id);
-                                    snaps.splice(ind + 1, 0, loader);
-                                }
-                            }
-                            return true;
-                        }
-                        return false;
-                    })
-                    if (posFound == undefined) {
-                        snaps.push(newSnap);
-                        if (lastSnp) {
-                            if (loaderBuilder != undefined) {
-                                var loader = loaderBuilder(src.id);
-                                snaps.push(loader)
-                            }
-                        }
-                    }
-                })
-            })
-            return snaps;
-        },
-        addSnaps: function (srcId = 'local', snaps) {
-            var s = store.getState();
-            var srcInd = null;
-            var src = s.sources.find((source, ind) => {
-                if (source.id == srcId) {
-                    srcInd = ind;
-                    return true;
-                }
-                return false;
-            })
-            var tl = src.timeline;
-            var nos = 0;
-            snaps.forEach((snap) => {
-                var posFound = tl.snaps.find((snp, ind) => {
-                    if (snp.taken_on < snap.taken_on) {
-                        tl.snaps.splice(ind, 0, snap);
-                        nos++;
-                        //console.log("snap added at",ind);
-                        return true;
-                    }
-                    return false;
-                })
-                if (posFound == undefined) {
-                    console.warn("Snap to be added not in scope");
-                }
-            })
-            s.sources[srcInd].timeline.skip += nos;
-            s.sources[srcInd].timeline = tl;
-            store.dispatch({ type: 'UPDATE', state: s });
-        },
-        removeSnaps: function (srcId = 'local', snaps) {
-            var s = store.getState();
-            var srcInd = null;
-            var src = s.sources.find((source, ind) => {
-                if (source.id == srcId) {
-                    srcInd = ind;
-                    return true;
-                }
-                return false;
-            })
-            var tl = src.timeline;
-            snaps.forEach((snap) => {
-                var posFound = tl.snaps.find((snp, ind) => {
-                    if (snp.id == snap) {
-                        tl.snaps.splice(ind, 1);
-                        return true;
-                    }
-                    return false;
-                })
-                if (posFound == undefined) {
-                    console.warn("Snap to be removed not in scope");
-                }
-            })
-            s.sources[srcInd].timeline = tl;
-            store.dispatch({ type: 'UPDATE', state: s });
-        },
-        getSnaps: function (srcId = 'local') {
-            var s = store.getState();
-            if (srcId == 'local') {
-                var srcInd = null;
-                var local = s.sources.find((source, ind) => {
-                    if (source.id == 'local') {
-                        srcInd = ind;
-                        return true;
-                    }
-                    return false;
-                })
-                var tl = local.timeline;
-                recs.find({}).sort({ taken_on: -1 }).skip(tl.skip).limit(10).exec((err, data) => {
-                    tl.skip = tl.skip + data.length;
-                    tl.snaps = tl.snaps.concat(data);
-                    s.sources[srcInd].timeline = tl;
-                    store.dispatch({ type: 'UPDATE', state: s });
-                })
-                // console.log(tl,local);
-            }
-            else {
-                if (window.srcs.get(srcId + ".type") == 'cloud/google') {
-                    var photos = new Photos(srcId);
-                    var srcInd = null;
-                    var cloud = s.sources.find((source, ind) => {
-                        if (source.id == srcId) {
-                            srcInd = ind;
-                            return true;
-                        }
-                        return false;
-                    })
-                    var tl = cloud.timeline;
-                    if (!tl.isLoading) {
-                        tl.isLoading = true;
-                        s.sources[srcInd].timeline = tl;
-                        store.dispatch({ type: 'UPDATE', state: s });
-                        photos.getLibrary(tl.nextPageToken, (snaps, token) => {
-                            tl.snaps = tl.snaps.concat(snaps);
-                            tl.nextPageToken = token;
-                            tl.isLoading = false;
-                            s.sources[srcInd].timeline = tl;
-                            store.dispatch({ type: 'UPDATE', state: s });
-                        });
-                    }
-                    else {
-                        console.warn("Loading already in progress");
-                    }
-                }
-            }
-        }
-    },
     addSnaps: function (srcId, snaps) {
-        this.timeline.addSnaps(srcId, snaps);
-        //update other catagories like tags here
+        var dev = new Device(srcId);
+        dev.addSnaps(snaps);
     },
     removeSnaps: function (srcId, ids) {
-        this.timeline.removeSnaps(srcId, ids);
-        //update other catagories like tags here
-        this.tags.removeSnaps(ids);
+        var dev = new Device(srcId);
+        dev.removeSnaps(ids);
     },
     updateSnap: function (snapId, next) {
-        var srcId = snapId.split(':')[0];
-        this.timeline.removeSnaps(srcId, [snapId]);
-        this.tags.removeSnaps([snapId]);
-        this.timeline.addSnaps(srcId, [next]);
-        this.tags.addSnaps([next]);
+
+    },
+    loadTimelineList: function () {
+        this.isTimelineLoading = true;
+        this.isTimelineInit = true;
+        var srcIds = getSourceIds();
+        var res = {};
+        var count = 0;
+        var st = store.getState();
+        var isDone = false;
+        var done = () => {
+            var thresholdDate = 0;
+            Object.keys(res).forEach((srcId, srcInd) => {
+                if (res[srcId].length) {
+                    var lastTaken_on = res[srcId][res[srcId].length - 1].taken_on
+                    if (!srcInd) {
+                        thresholdDate = lastTaken_on;
+                    }
+                    else {
+                        if (lastTaken_on > thresholdDate) {
+                            thresholdDate = lastTaken_on;
+                        }
+                    }
+                }
+            })
+            Object.keys(res).forEach((srcId, srcInd) => {
+                if (st.sources[srcId].timeline.list == null) {
+                    st.sources[srcId].timeline.list = [];
+                }
+                res[srcId].forEach((item) => {
+                    if (item.taken_on >= thresholdDate) {
+                        st.sources[srcId].timeline.skip++;
+                        st.sources[srcId].timeline.list.push(item);
+                    }
+                })
+            })
+            this.isTimelineLoading = false;
+            store.dispatch({ type: 'UPDATE', state: st });
+        }
+        srcIds.forEach((srcId) => {
+            var dev = new Device(srcId);
+            if (!st.sources[srcId].timeline.isLoaded) {
+                dev.getTimelineList(st.sources[srcId].timeline.skip, (list) => {
+                    /**
+                     * list format:
+                     * [{id:"tre76y",taken_on:5745567567},...]
+                     */
+                    if (list != null) {
+                        if (!list.length) {
+                            st.sources[srcId].timeline.isLoaded = true;
+                        }
+                        res[srcId] = list;
+                    }
+                    count++;
+                    if (count >= srcIds.length && !isDone) {
+                        isDone = true;
+                        done();
+                    }
+                })
+            }
+        })
+        window.setTimeout(() => {
+            if (!isDone) {
+                console.log('tl loader still waiting after 6 secs, finalizing..');
+                isDone = true;
+                done();
+            }
+        }, MAX_LOADING_TIME);
+    },
+    getTimelineList: function () {
+        console.log('getting tl list');
+        var st = store.getState();
+        var srcIds = getSourceIds();
+        var list = [];
+        srcIds.forEach((srcId) => {
+            if (st.sources[srcId].timeline.list != null) {
+                st.sources[srcId].timeline.list.forEach((_item) => {
+                    var item = { id: srcId + '/' + _item.id, taken_on: _item.taken_on }
+                    list.push(item);
+                })
+            }
+        })
+        list.sort((a, b) => { return b.taken_on - a.taken_on });
+        console.log(list);
+        return list;
+    },
+    isTimelineLoaded: function () {
+        var st = store.getState();
+        var srcIds = getSourceIds();
+        var allLoaded = true;
+        srcIds.forEach((srcId) => {
+            if (!st.sources[srcId].timeline.isLoaded) {
+                allLoaded = false;
+            }
+        })
+        return allLoaded;
+    },
+    loadTagsCatalog: function () {
+
+    },
+    getTagsCatalog: function () {
+
+    },
+    loadTagsList: function () {
+
+    },
+    getTagsList: function () {
+
+    },
+    loadSnapInfo: function (snapId) {
+        var devId = snapId.split('/')[0];
+        var snapKey = snapId.split('/')[1];
+        var dev = new Device(devId);
+        dev.getSnapInfo(snapKey, (snap) => {
+            var st = store.getState();
+            st.sources[devId].snaps[snapKey] = snap;
+            console.log('loading snap info')
+            store.dispatch({ type: 'UPDATE', state: st });
+        })
+    },
+    getSnapInfo: function (snapId) {
+        console.log('getting snap info')
+        var devId = snapId.split('/')[0];
+        var snapKey = snapId.split('/')[1];
+        var st = store.getState();
+        if (st.sources[devId] != undefined) {
+            var _snap = st.sources[devId].snaps[snapKey];
+            if (_snap != undefined) {
+                var snap = JSON.parse(JSON.stringify(_snap));
+                snap.id = snapId;
+                snap.file_key = devId + '/' + snap.file_key;
+                snap.thumbnail_key = devId + '/' + snap.thumbnail_key;
+                return snap;
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
+        }
     },
     preview: {
         open: function (id, context = null) {
@@ -416,6 +239,89 @@ var state = {
         }
     }
 }
+
+devEvents.on('newDevice', () => {
+
+})
+devEvents.on('deviceConnected', () => {
+
+})
+devEvents.on('deviceDisconnected', () => {
+
+})
+devEvents.on('addTimelineSnaps', (devId, _snaps) => {
+    /**
+     * Here we only update timeline
+     */
+    console.log('adding new snaps to timeline');
+    var st = store.getState();
+    var isChanged = false;
+    var snaps = _snaps.map((snap) => {
+        return ({ id: snap.id, taken_on: snap.taken_on });
+    })
+    if (st.sources[devId] != undefined) {
+        //make sure tl list is initialised
+        if (st.sources[devId].timeline.list != null) {
+            var prevList = st.sources[devId].timeline.list;
+            if (st.sources[devId].timeline.isLoaded) {
+                isChanged = true;
+                st.sources[devId].timeline.list = prevList.concat(snaps);
+                st.sources[devId].timeline.skip = st.sources[devId].timeline.skip + snaps.length;
+            }
+            else {
+                var lastTakenOn = prevList[prevList.length - 1].taken_on;
+                snaps.forEach((snap) => {
+                    if (snap.taken_on >= lastTakenOn) {
+                        isChanged = true;
+                        st.sources[devId].timeline.list.push(snap);
+                        st.sources[devId].timeline.skip++;
+                    }
+                })
+            }
+            if (isChanged) {
+                st.sources[devId].timeline.list.sort((a, b) => {
+                    return b.taken_on - a.taken_on;
+                })
+                console.log('posting changes..', st.sources[devId].timeline.list)
+                store.dispatch({ type: 'UPDATE', state: st });
+            }
+        }
+        else {
+            console.warn('prevList is null')
+        }
+    }
+})
+devEvents.on('removeTimelineSnaps', (devId, snapIds) => {
+    console.log('removing snaps from timeline');
+    var st = store.getState();
+    var isChanged = false;
+    if (st.sources[devId] != undefined) {
+        var prevList = st.sources[devId].timeline.list;
+        if (prevList != null) {
+            st.sources[devId].timeline.list = prevList.filter((snap) => {
+                if (snapIds.includes(snap.id)) {
+                    isChanged = true;
+                    st.sources[devId].timeline.skip--;
+                    return false;
+                }
+                else
+                    return true;
+            })
+        }
+    }
+    if (isChanged) {
+        store.dispatch({ type: 'UPDATE', state: st });
+    }
+})
+devEvents.on('updateSnap', () => {
+
+})
+devEvents.on('updateTagsCatalog', () => {
+
+})
+devEvents.on('updateTagsList', () => {
+
+})
 
 
 export default state;

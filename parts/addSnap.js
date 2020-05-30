@@ -135,7 +135,7 @@ function imgFormat(rec, cb) {
         img.fixOrientation('media/' + rec.filename, () => {
             rec.file_key = window.resources.register( filesDir + '/media/' + rec.filename);
             img.resize(200, 'thumbs/' + rec.filename, () => {
-                rec.file_key = window.resources.register( filesDir + '/thumbs/' + rec.filename);
+                rec.thumbnail_key = window.resources.register( filesDir + '/thumbs/' + rec.filename);
                 cb(rec);
             })
         })
@@ -229,13 +229,10 @@ function start() {
                     if (ind + 1 == result.filePaths.length) {
                         //after last snap
                         console.log('import done');
-                        window.state.addSnap('local', snaps);
+                        window.state.addSnaps('local', snaps);
                     }
                 });
             });
-        }
-        else {
-            cb(0);
         }
     }).catch(err => {
         console.log(err)

@@ -102,7 +102,7 @@ class Local {
     removeSnaps(snapIds) {
         //remove records
         //emit tag cat, tag lists and tl changes events
-        deleteSnaps(snapIds, (snaps)=> {
+        deleteSnaps(snapIds, (snaps) => {
             //TODO: emit tags catalog updates
             //TODO: emit tags lists updates
             /**
@@ -125,8 +125,13 @@ class Local {
     }
 }
 
+class GPhotos {
+
+}
+
 function addDevice(info) {
     if (devices[info.id] == undefined) {
+        console.log('adding dev',info)
         var id = info.id;
         if (id == 'local') {
             devices[id] = new Local();
@@ -144,7 +149,7 @@ class Device {
     constructor(devId) {
         this.devId = devId;
         if (devices[devId] == undefined) {
-            console.error('Cannot init device manager, unknown devId');
+            console.error('Cannot init device manager, unknown devId', devId);
         }
         this.dev = devices[devId];
     }

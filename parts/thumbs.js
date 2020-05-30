@@ -15,16 +15,36 @@ class Thumb extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { src: this.props.src,menu:false }
+        this.state = { snap: null, menu:false }
+    }
+    componentWillUnmount() {
+        console.log('comp UNmounted!');
+        this.unsub();
     }
     componentDidMount = () => {
+        console.log('comp mounted!');
+        this.unsub = window.state.subscribe(() => {
+            this.parseState();
+        })
+        var snap = this.parseState();
+        if(snap==null){
+            window.state.loadSnapInfo(this.props.id);
+        }
+    }
+    parseState = () => {
+        var snap = window.state.getSnapInfo(this.props.id);
+        if(snap!=null){
+            this.setState({...this.state,snap})
+        }
+        return snap;
     }
     close(){
         this.state.menu = false;
         this.setState(this.state);
     }
-    tags(snap){
-        if(snap.tags.length){
+    tags(){
+        var snap=this.state.snap;
+        if(snap!=null&&snap.tags.length){
             var html=[];
             snap.tags.forEach((tagId)=>{
             html.push(<div className="th_menu_opt_tag" key={tagId} onClick={()=>{
@@ -48,7 +68,7 @@ class Thumb extends React.Component {
         }}>Untag from "{tagId}"</div>)
         }
     }
-    getMenu(snap){
+    getMenu(){
     return(<div className="th_menu_opts base-semilight">
         {this.untagOpt()}
         <div className="th_menu_opt" onClick={()=>{
@@ -57,73 +77,27 @@ class Thumb extends React.Component {
         }}>Preview</div>
         <div className="th_menu_opt ink-red" onClick={()=>{
              this.close();
-             window.actions('DELETE_SNAP', this.props.id )
+             window.actions('DELETE_SNAPS', [this.props.id] )
         }}>Delete</div>
         <div className="th_menu_opt">Export</div>
         <div className="th_menu_opt" onClick={()=>{
             this.close();
                 window.actions("ADD_TAG",this.props.id)
         }}>Add tag</div>
-        {this.tags(snap)}
+        {this.tags()}
     </div>)
-    }
-    menu(){
-        var id=this.props.id;
-        var src=this.props.context;
-        var snaps=[];
-        if(src=='timeline'){
-        snaps=window.state.timeline.snaps();
-        }
-        else if(src.split(':')[0]=='tag'){
-            var tagId=src.split(':')[1];
-            var tags=window.state.tags.list();
-            var tagInd=tags.findIndex((tag)=>{
-                return tag.id==tagId;
-            })
-            if(tagInd>=0){
-               snaps= tags[tagInd].snaps; 
-            }
-        }
-        //for other contexts
-        var snap=snaps.find((snp)=>{
-            return snp.id==id;
-        })
-        if(snap!=undefined)
-        return this.getMenu(snap);
-    }
-    getData = () => {
-        var srcId = this.props.id.split(':')[0];
-        if (srcId == 'local') {
-            recs.findOne({ id: this.props.id }, (err, snap) => {
-                if (snap != null) {
-                    var state = this.state;
-                    state.src = snap.thumb_url;
-                    state.type = snap.type;
-                    this.setState(state);
-                }
-            })
-        }
-        else {
-            //code for other types here.
-        }
     }
     render() {
         var size = '9rem';
-        var src = this.props.src;
+        var src=null;
         if (this.props.size != undefined && this.props.size != null) {
             size = this.props.size;
         }
-        if (this.props.src == undefined) {
-            if (this.state.src == undefined&&this.props.id!=undefined) {
-                console.warn("getting data for thumbnail");
-                this.getData();
-            }
-            else {
-                src = this.state.src;
-            }
+        if (this.state.snap != null) {
+            src='resource://'+this.state.snap.thumbnail_key;
         }
         var style = { height: size, width: size };
-        if (src != undefined) {
+        if (src != null) {
             style["backgroundImage"] = 'url(' + src + ')';
         }
         var cls="thumb";
@@ -137,15 +111,14 @@ class Thumb extends React.Component {
                 this.close()
             }}
             hideOnClick={false}
-            content={this.menu()}
+            content={this.getMenu()}
             arrow={true}
             className="th_menu"
             animation="scale"
             duration={0}
             placement="auto-start"
             hideOnClick='toggle'
-            interactive={true}
-        >
+            interactive={true}>
              <div className={cls} style={style}
                 onClick={() => {
                     this.close();
@@ -173,13 +146,17 @@ class ThumbsGrid extends React.Component {
         this.state = { list: null }
     }
     componentDidMount = () => {
-
+        console.log('grid mounted!')
     }
     showThumbs = () => {
         var html = [];
-        if (this.props.snaps != undefined && this.props.snaps != null) {
-            this.props.snaps.forEach((snap, key) => {
-                html.push(<Thumb size={this.props.thumbSize} context={this.props.context} key={snap.id} src={snap.thumb} id={snap.id} type={snap.type} onClick={(id) => {
+        if (this.props.snapIds != undefined && this.props.snapIds != null) {
+            this.props.snapIds.forEach((snapId, key) => {
+                html.push(<Thumb size={this.props.thumbSize} 
+                    context={this.props.context} 
+                    key={snapId} 
+                    id={snapId} 
+                    onClick={(id) => {
                     if (this.props.onThumbClick != undefined) {
                         this.props.onThumbClick(id);
                     }
@@ -200,7 +177,6 @@ class ThumbsGrid extends React.Component {
         )
     }
     render() {
-
         if (this.props.title != undefined) {
             return (
                 <div>

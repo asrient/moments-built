@@ -17,7 +17,13 @@ import 'tippy.js/dist/tippy.css';
 
 if (window.srcs.get('local') == undefined) {
     console.log("Initializing sources..");
-    window.srcs.set('local', { isActive: true, count: 0, type: 'local', name: "Computer", icon: "assets://icons/SystemEntity_Computer.png" });
+    window.srcs.set('local', {
+        id:'local',
+        isActive: true,
+        type: 'local',
+        name: "Computer",
+        icon: "assets://icons/SystemEntity_Computer.png"
+    });
 }
 if (!fs.existsSync(filesDir)) {
     fs.mkdirSync(filesDir + '/tmp', { recursive: true });
@@ -266,7 +272,7 @@ ReactDOM.render(
 );
 
 
- win.resize = function () {
+win.resize = function () {
     if (win.isMaximized()) {
         win.unmaximize();
     }
