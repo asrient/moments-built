@@ -54,6 +54,9 @@ class Peer {
     updateSnap(snap) {
 
     }
+    getFile(key, cb) {
+
+    }
     update(topic, data) {
         /**
          * this.peer.request({type: 'UPDATE:'+topic, data})
@@ -119,6 +122,23 @@ class Local {
     updateSnap(snap) {
 
     }
+    getFile(key, cb) {
+        var url = window.resources.getPath(key);
+        if (url != null) {
+            var type = MIME.lookup(url);
+            fs.readFile(url, (err, data) => {
+                if (data != null) {
+                    cb(type, data);
+                }
+                else {
+                    cb(null)
+                }
+            })
+        }
+        else {
+            cb(null)
+        }
+    }
     update(topic, body) {
         // send update to this device
         devEvents.emit(topic, 'local', body);
@@ -131,7 +151,7 @@ class GPhotos {
 
 function addDevice(info) {
     if (devices[info.id] == undefined) {
-        console.log('adding dev',info)
+        console.log('adding dev', info)
         var id = info.id;
         if (id == 'local') {
             devices[id] = new Local();
@@ -176,6 +196,9 @@ class Device {
     }
     updateSnap(snap) {
 
+    }
+    getFile(key, cb) {
+        this.dev.getFile(key, cb);
     }
 }
 

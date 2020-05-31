@@ -12,41 +12,42 @@ class Preview extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { id: null, isActive: false, snap: null, snaps: [], snapInd: 0, limits: { left: false, right: false }, showTags: true, showTbar: true }
+        this.state = {
+            id: null,
+            isActive: false,
+            snap: null,
+            snaps: [],
+            snapInd: 0,
+            limits: { left: false, right: false },
+            showTags: true,
+            showTbar: true
+        }
+        this.retries = [];
     }
-    getSnapInfo = (id, cb) => {
-        recs.findOne({ id }, (err, snap) => {
-            if (snap != null)
-                cb(snap);
+    componentDidMount = () => {
+        window.state.subscribe(() => {
+            this.parseState();
         })
+        this.parseState();
     }
-
-
-    parseState = (id = null) => {
-        var data = window.state.getState().preview;
+    parseState = () => {
+        var preview = window.state.getState().preview;
         var state = this.state;
-        state.isActive = data.isActive;
+        state.isActive = preview.isActive;
         state.snaps = [];
-        if (data.isActive) {
-            if (id != null) {
-                state.id = id;
-            }
-            else if (state.id == null) {
-                state.id = data.id;
+        if (preview.isActive) {
+            state.id = preview.id;
+            state.snap = window.state.getSnapInfo(preview.id);
+            if (state.snap == null) {
+                this.tryLoadingSnap(state.id);
             }
             var allSnaps = [];
-            if (data.context == 'timeline') {
-                allSnaps = window.state.timeline.snaps();
+            if (preview.context == 'timeline') {
+                allSnaps = window.state.getTimelineList();
             }
             else if (data.context.split(':')[0] == 'tag') {
                 var tagId = data.context.split(':')[1];
-                var list = window.state.tags.list();
-                var ind = list.findIndex((tag) => {
-                    return tag.id == tagId
-                })
-                if (ind >= 0) {
-                    allSnaps = list[ind].snaps;
-                }
+                allSnaps = window.state.getTagsList(tagId);
             }
             var ind = allSnaps.findIndex((snp) => {
                 if (snp.id == state.id) {
@@ -58,7 +59,6 @@ class Preview extends React.Component {
             })
             if (ind >= 0) {
                 var count = 0;
-                state.snap = allSnaps[ind];
                 state.limits = { left: false, right: false };
                 for (var i = ind - 5; i <= ind + 5; i++) {
                     if (allSnaps[i] != undefined) {
@@ -90,41 +90,39 @@ class Preview extends React.Component {
         }
         this.setState(state);
     }
-    componentDidMount = () => {
-        window.state.subscribe(() => {
-            this.parseState();
-        })
-        this.parseState();
+    tryLoadingSnap(id) {
+        if (!this.retries.includes(id)) {
+            window.state.loadSnapInfo(id);
+            this.retries.push(id);
+        }
     }
-    openByIndex = (ind) => {
-        var state = this.state;
-        var snap = state.snaps[ind];
-        if (snap != undefined) {
-            this.parseState(snap.id);
-        }
-        else {
-            console.error("req to open invalid snap index", ind);
-        }
+    changeSnap(id) {
+        window.state.preview.changeSnap(id);
     }
     getTitle = () => {
-        const months = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"];
-        var dt = new Date(this.state.snap.taken_on);
-        var date = dt.getUTCDate() + " " + months[dt.getUTCMonth()] + " " + dt.getUTCFullYear();
-        var hr = dt.getHours();
-        var min = dt.getMinutes();
-        var suffix = "AM";
-        if (hr > 12 || (hr == 12 && min > 0)) {
-            suffix = "PM";
-            if (hr > 12) {
-                hr -= 12;
+        if (this.state.snap != null) {
+            const months = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            var dt = new Date(this.state.snap.taken_on);
+            var date = dt.getUTCDate() + " " + months[dt.getUTCMonth()] + " " + dt.getUTCFullYear();
+            var hr = dt.getHours();
+            var min = dt.getMinutes();
+            var suffix = "AM";
+            if (hr > 12 || (hr == 12 && min > 0)) {
+                suffix = "PM";
+                if (hr > 12) {
+                    hr -= 12;
+                }
             }
+            if (min < 10) {
+                min = "0" + min;
+            }
+            var time = hr + ":" + min + " " + suffix;
+            return (<div>{time + ", " + date}</div>)
         }
-        if (min < 10) {
-            min = "0" + min;
+        else {
+            return (<div></div>)
         }
-        var time = hr + ":" + min + " " + suffix;
-        return (<div>{time + ", " + date}</div>)
     }
     getView = () => {
         var ht = "100%";
@@ -132,10 +130,10 @@ class Preview extends React.Component {
             ht = "calc(100% - 5rem)";
         }
         if (this.state.snap.type == 'image') {
-            return (<div className="pv_picView" style={{ backgroundImage: "url(" + this.state.snap.url + ")", height: ht }}></div>)
+            return (<div className="pv_picView" style={{ backgroundImage: "url(resource://" + this.state.snap.file_key + ")", height: ht }}></div>)
         }
         else {
-            return (<video src={this.state.snap.url} style={{ maxHeight: ht, maxWidth: '100%' }}
+            return (<video src={'resource://' + this.state.snap.file_key} style={{ maxHeight: ht, maxWidth: '100%' }}
                 controls autoPlay ></video>)
         }
     }
@@ -164,7 +162,7 @@ class Preview extends React.Component {
 
         if (willShow) {
             return (<div className={"pv_" + dir + "Arrow"} onClick={() => {
-                this.parseState(this.state.snaps[this.state.snapInd + val].id)
+                this.changeSnap(this.state.snaps[this.state.snapInd + val].id)
             }}></div>)
         }
         else {
@@ -172,7 +170,6 @@ class Preview extends React.Component {
         }
     }
     getThumb = (snap, isFocus = false) => {
-        var snapInd = this.state.snapIndex;
         var getClass = () => {
             var cls = "pv_thumb"
             if (isFocus) {
@@ -180,51 +177,21 @@ class Preview extends React.Component {
             }
             return (cls);
         }
-        var src = snap.thumb_url;
+        var snapObj = window.state.getSnapInfo(snap.id);
+        if (snapObj == null) {
+            this.tryLoadingSnap(snap.id);
+        }
+        var src = null;
+        if (snapObj != null) {
+            src = 'resource://' + snapObj.thumbnail_key;
+        }
         return (<img className={getClass()} key={snap.id} src={src} onClick={() => {
-            this.parseState(snap.id);
+            this.changeSnap(snap.id);
         }} />)
-
     }
     getThumbsBar = () => {
         if (this.state.showTbar) {
             var html = [];
-            /* var left = -3;
-             var right = 3;
-             for (var i = -3; i <= 3; i++) {
-                 var v = this.getThumb(snapInd + i);
-                 if (v != null) {
-                     html.push(v);
-                 }
-                 else {
-                     if (i <= 0) {
-                         left = i;
-                     }
-                     else {
-                         right = i;
-                     }
-                 }
-             }
-             if (html.length < 7) {
-                 if (right == 3) {
-                     for (var i = 4; i <= 6; i++) {
-                         var v = this.getThumb(snapInd + i);
-                         if (v != null) {
-                             html.push(v);
-                         }
-                     }
-                 }
-                 if (html.length < 7) {
-                     if (left == -3) {
-                         for (var i = -4; i >= -6; i--) {
-                             var v = this.getThumb(snapInd + i);
-                             if (v != null) {
-                                 html.splice(0, 0, v);
-                             }
-                         }
-                     }
-                 }
-             }*/
             this.state.snaps.forEach((snap, ind) => {
                 var isFocus = false;
                 if (ind == this.state.snapInd) {
@@ -268,21 +235,31 @@ class Preview extends React.Component {
             </div>)
         }
     }
+    getBody() {
+        if (this.state.snap != null) {
+            return (<div style={{ height: '100%' }}>
+                {this.getTags()}
+                {this.getArrow("left")}
+                {this.getView()}
+                {this.getArrow("right")}
+            </div>)
+        }
+    }
     render() {
         if (this.state.isActive) {
             return (<div className="pv_window">
                 <div className="pv_head">
-                   
-                    <div className="pv_nohandle center" style={{ marginLeft: '5rem',justifyContent: 'flex-end' }}>
+
+                    <div className="pv_nohandle center" style={{ marginLeft: '5rem', justifyContent: 'flex-end' }}>
                         <BarButton icon="Control_GoBack" onClick={() => {
                             //closing preview
                             window.actions('CLOSE_PREVIEW');
                         }} />
-                        </div>
-                         <div className="pv_handle"></div>
+                    </div>
+                    <div className="pv_handle"></div>
                     <div className="pv_handle center base-regular size-xs">{this.getTitle()}</div>
                     <div className="pv_nohandle center">
-                    <BarButton icon="TabBar_More" selected={this.state.showTbar} onClick={() => {
+                        <BarButton icon="TabBar_More" selected={this.state.showTbar} onClick={() => {
                             var state = this.state;
                             if (this.state.showTbar) {
                                 state.showTbar = false
@@ -293,14 +270,14 @@ class Preview extends React.Component {
                             this.setState(state);
                         }} />
                         <BarButton icon="Control_Info" selected={this.state.showTags} onClick={() => {
-                           var state = this.state;
-                           if (this.state.showTags) {
-                               state.showTags = false
-                           }
-                           else {
-                               state.showTags = true
-                           }
-                           this.setState(state);
+                            var state = this.state;
+                            if (this.state.showTags) {
+                                state.showTags = false
+                            }
+                            else {
+                                state.showTags = true
+                            }
+                            this.setState(state);
                         }} /><BarButton icon="Control_Share" />
                         <BarButton icon="Navigation_Trash" onClick={() => {
                             var toDel = this.state.id;
@@ -311,15 +288,12 @@ class Preview extends React.Component {
                                 console.log("moving left")
                                 this.parseState(this.state.snaps[this.state.snapInd - 1].id)
                             }
-                            window.actions('DELETE_SNAP', toDel);
+                            window.actions('DELETE_SNAPS', [toDel]);
                         }} />
                     </div>
                 </div>
                 <div className="pv_body">
-                    {this.getTags()}
-                    {this.getArrow("left")}
-                    {this.getView()}
-                    {this.getArrow("right")}
+                    {this.getBody()}
                     {this.getThumbsBar()}
                 </div>
             </div>)

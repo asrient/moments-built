@@ -167,7 +167,7 @@ var state = {
     getTagsCatalog: function () {
 
     },
-    loadTagsList: function () {
+    loadTagsList: function (tagId) {
 
     },
     getTagsList: function () {
@@ -213,6 +213,13 @@ var state = {
             s.preview.id = id;
             s.preview.context = context;
             store.dispatch({ type: 'UPDATE', state: s });
+        },
+        changeSnap:function(id){
+            var s = store.getState();
+            if(s.preview.isActive){
+                s.preview.id = id;
+                store.dispatch({ type: 'UPDATE', state: s });
+            }
         },
         close: function () {
             var s = store.getState();
@@ -323,5 +330,18 @@ devEvents.on('updateTagsList', () => {
 
 })
 
+win.webContents.session.protocol.interceptBufferProtocol('resource', (request, callback) => {
+    var url = request.url.split('resource://')[1];
+    var devId = url.split('/')[0];
+    var fileKey = url.split('/')[1];
+    var dev = new Device(devId);
+    dev.getFile(fileKey, (type, data) => {
+        if (type != null) {
+            callback(data);
+        }
+    })
+}, (error) => {
+    if (error) console.error('Failed to register protocol', error)
+})
 
 export default state;
