@@ -8,6 +8,7 @@ import Timeline from "./parts/timeline.js";
 import Preview from "./parts/preview.js";
 import Tags from "./parts/tags.js";
 import Window from "./parts/window.js";
+import Welcome from "./parts/welcome.js";
 import state from "./parts/state.js";
 import actions from "./parts/actions.js";
 import { BarButton, Loading, Icon, Switch } from "./parts/global.js";
@@ -165,12 +166,12 @@ class DeviceMenu extends React.Component {
 }
 
 
-const allPages = ['timeline', 'places', 'people', 'tags']
+const allPages = ['timeline', 'places', 'people', 'tags','welcome']
 
 class Nav extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { pageBarHtml: null, currentPage: 'timeline', relayToPage: null }
+        this.state = { pageBarHtml: null, currentPage: null, relayToPage: null }
     }
     componentDidMount() {
         this.parseState();
@@ -235,28 +236,38 @@ class Nav extends React.Component {
         }
     }
     render() {
-        return (
-            <div>
-                <div id="head">
-                    <div id="menubar">
-                        <div id="handle1" className="handle"></div>
-                        <div className="center"><Switcher change={this.setPage} selected={this.state.currentPage} /></div>
-                        <div id="handle2">
-                            <div className="handle"></div>
-                            <div className="center">
-                                <DeviceMenu />
-                            </div>
-                            <div className="handle"></div>
-                        </div>
-
-                    </div>
-                    {this.getPageBar()}
-                </div>
+        if (this.state.currentPage == 'welcome') {
+            return (<Welcome relay={this.state.relayToPage} />)
+        }
+        else if(this.state.currentPage !=null) {
+            return (
                 <div>
-                    {this.getPage()}
+                    <div id="head">
+                        <div id="menubar">
+                            <div id="handle1" className="handle"></div>
+                            <div className="center"><Switcher change={this.setPage} selected={this.state.currentPage} /></div>
+                            <div id="handle2">
+                                <div className="handle"></div>
+                                <div className="center">
+                                    <DeviceMenu />
+                                </div>
+                                <div className="handle"></div>
+                            </div>
+    
+                        </div>
+                        {this.getPageBar()}
+                    </div>
+                    <div>
+                        {this.getPage()}
+                    </div>
                 </div>
-            </div>
-        )
+            )
+        }
+        else{
+            return(<div style={{paddingTop:'45vh'}}>
+                <Loading/>
+            </div>)
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 import { createStore } from 'redux'
 import { Photos } from "./gPhotos.js";
-import { Device, devEvents, addDevice } from "./devices.js";
+import { Device, devEvents, addDevice, airSyncInit } from "./devices.js";
 
 const MAX_LOADING_TIME = 6000;
 
@@ -19,12 +19,17 @@ function reducers(state = 0, action) {
                 }
                 addDevice(window.srcs.get(key));
             });
-            return ({
+            var st = ({
+                info: window.info.get(),
                 nav: { page: 'timeline', relay: null },
                 sources,
                 preview: { isActive: false, id: null, context: null },
                 window: { isActive: false, content: null, relay: null }
             })
+            if (st.info.uid == undefined) {
+                st.nav = { page: 'welcome', relay: null }
+            }
+            return st;
         }
         case 'UPDATE': {
             return action.state
@@ -47,7 +52,32 @@ var state = {
     isTimelineLoading: false,
     isTimelineInit: false,
     init: function () {
-        store.dispatch({ type: 'INIT' })
+        store.dispatch({ type: 'INIT' });
+        var info = window.info.get();
+        if (info.uid != undefined && info.host != undefined) {
+            airSyncInit(airPeer);
+            airPeer.start(info.uid, info.host, 'moments', info.username + ':' + info.devicename);
+        }
+    },
+    init0: function (dat) {
+        if (dat.icon == undefined) {
+            dat.icon = 'default'
+        }
+        if (dat.username == undefined) {
+            dat.username = 'user'
+        }
+        if (dat.devicename == undefined) {
+            dat.devicename = 'device'
+        }
+        window.info.set('uid', dat.uid);
+        window.info.set('host', dat.host);
+        window.info.set('username', dat.username);
+        window.info.set('devicename', dat.devicename);
+        window.info.set('icon', dat.icon);
+        if (dat.uid != undefined && dat.host != undefined) {
+            airPeer.start(dat.uid, dat.host, 'messages', dat.username + ':' + dat.devicename)
+        }
+        store.dispatch({ type: 'INIT' });
     },
     openPage: function (page, relay) {
         var data = store.getState();
@@ -214,9 +244,9 @@ var state = {
             s.preview.context = context;
             store.dispatch({ type: 'UPDATE', state: s });
         },
-        changeSnap:function(id){
+        changeSnap: function (id) {
             var s = store.getState();
-            if(s.preview.isActive){
+            if (s.preview.isActive) {
                 s.preview.id = id;
                 store.dispatch({ type: 'UPDATE', state: s });
             }
@@ -251,7 +281,14 @@ devEvents.on('newDevice', () => {
 
 })
 devEvents.on('deviceConnected', () => {
-
+    /**
+     * ## if the tl page is still on early (first) load, we load it again forcefully.
+     * not done for count > 2 for the sake of UX, (done automatically when user is ready to load more)
+     * if(state.timelineLoadCount<2){
+     * state.loadTimelineList()
+     * }
+     * reload tags list and cat, if the current page is such
+     */
 })
 devEvents.on('deviceDisconnected', () => {
 
