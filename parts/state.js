@@ -1,6 +1,6 @@
 import { createStore } from 'redux'
 import { Photos } from "./gPhotos.js";
-import { Device, devEvents, addDevice, airSyncInit, init1 } from "./devices.js";
+import { Device, devEvents, addDevice, airSyncInit, init1, reveal } from "./devices.js";
 
 const MAX_LOADING_TIME = 6000;
 
@@ -82,6 +82,7 @@ var state = {
         store.dispatch({ type: 'INIT' });
     },
     init1,
+    reveal,
     openPage: function (page, relay) {
         var data = store.getState();
         data.nav.page = page;

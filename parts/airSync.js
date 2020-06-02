@@ -199,7 +199,7 @@ class AirSync extends EventEmitter {
         if (this.sessionId != null) {
             air.request(this.peerId + ':' + this.sessionId, buildMessage({ type, payload }), cb);
         }
-        else{
+        else {
             cb(null);
         }
         this.init2(false);
@@ -212,7 +212,7 @@ function airSyncInit(airPeer) {
     devicename = air.name.split(':')[1];
     air.on('request', (req) => {
         var data = parseMessage(req.body);
-        if (data.type == 'reveal') {
+        if (data.type == 'REVEAL') {
             var reply = {
                 username,
                 devicename,
@@ -281,9 +281,18 @@ function init1(airId) {
         airEvents.emit('init1', peer);
     })
 }
+
+function reveal(airId, cb) {
+    air.request(airId, buildMessage({ type: 'REVEAL' }), (ress) => {
+        var res = parseMessage(ress.body);
+        cb(ress.from, res);
+    })
+}
+
+
 /**
  * @AirEVENTS
  * init1
  * 
  */
-export { AirSync, airEvents, airSyncInit, init1 };
+export { AirSync, airEvents, airSyncInit, init1, reveal };
