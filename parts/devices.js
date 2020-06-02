@@ -71,9 +71,14 @@ class Peer extends AirSync {
             reqObj = JSON.stringify(reqObj);
         }
         this.request('GET:' + topic, reqObj, (res) => {
-            if (res.status == 200) {
-                res.parseBody();
-                cb(JSON.parse(res.body));
+            if(res!=null){
+                if (res.status == 200) {
+                    res.parseBody();
+                    cb(JSON.parse(res.body));
+                }
+                else {
+                    cb(null);
+                }
             }
             else {
                 cb(null);
@@ -113,8 +118,13 @@ class Peer extends AirSync {
     }
     getFile(key, cb) {
         this.request('RESOURCE:' + key, null, (res) => {
-            if (res.status != 200) {
-                cb(res.body);
+            if(res!=null){
+                if (res.status != 200) {
+                    cb(res.body);
+                }
+                else {
+                    cb(null);
+                }
             }
             else {
                 cb(null);

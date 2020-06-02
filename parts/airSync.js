@@ -197,7 +197,10 @@ class AirSync extends EventEmitter {
     }
     request(type, payload = null, cb = function () { }) {
         if (this.sessionId != null) {
-            air.request(this.peerId + ':' + this.sessionId, buildMessage({ type, payload }), cb)
+            air.request(this.peerId + ':' + this.sessionId, buildMessage({ type, payload }), cb);
+        }
+        else{
+            cb(null);
         }
         this.init2(false);
     }
