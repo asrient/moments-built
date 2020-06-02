@@ -1,6 +1,6 @@
 import { createStore } from 'redux'
 import { Photos } from "./gPhotos.js";
-import { Device, devEvents, addDevice, airSyncInit } from "./devices.js";
+import { Device, devEvents, addDevice, airSyncInit, init1 } from "./devices.js";
 
 const MAX_LOADING_TIME = 6000;
 
@@ -12,12 +12,13 @@ function reducers(state = 0, action) {
             keys.forEach(key => {
                 sources[key] = {
                     id: key,
+                    info: window.srcs.get(key),
                     sessionId: null,
                     snaps: {},
                     timeline: { list: null, skip: 0, isLoaded: false },
                     tags: null
                 }
-                addDevice(window.srcs.get(key));
+                addDevice(key);
             });
             var st = ({
                 info: window.info.get(),
@@ -75,10 +76,11 @@ var state = {
         window.info.set('devicename', dat.devicename);
         window.info.set('icon', dat.icon);
         if (dat.uid != undefined && dat.host != undefined) {
-            airPeer.start(dat.uid, dat.host, 'messages', dat.username + ':' + dat.devicename)
+            airPeer.start(dat.uid, dat.host, 'moments', dat.username + ':' + dat.devicename)
         }
         store.dispatch({ type: 'INIT' });
     },
+    init1,
     openPage: function (page, relay) {
         var data = store.getState();
         data.nav.page = page;
@@ -277,8 +279,30 @@ var state = {
     }
 }
 
-devEvents.on('newDevice', () => {
-
+devEvents.on('newDevice', (info) => {
+    /**
+     * @info
+     * uid
+     * host
+     * username
+     * devicename
+     * icon
+     * secret
+     */
+    info.type = 'airPeer'
+    var s = store.getState();
+    var peerId = info.uid + ':' + info.host;
+    window.srcs.set(peerId, info);
+    addDevice(peerId);
+    s.sources[peerId] = {
+        id: peerId,
+        info,
+        sessionId: null,
+        snaps: {},
+        timeline: { list: null, skip: 0, isLoaded: false },
+        tags: null
+    }
+    store.dispatch({ type: 'UPDATE', state: s });
 })
 devEvents.on('deviceConnected', () => {
     /**
@@ -289,6 +313,9 @@ devEvents.on('deviceConnected', () => {
      * }
      * reload tags list and cat, if the current page is such
      */
+})
+devEvents.on('deviceUpdate', () => {
+
 })
 devEvents.on('deviceDisconnected', () => {
 

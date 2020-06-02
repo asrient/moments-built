@@ -1,35 +1,40 @@
 import deleteSnaps from "./deleteSnap.js";
-import { Airsync, airEvents, airSyncInit } from "./airSync.js";
+import { Airsync, airEvents, airSyncInit, init1 } from "./airSync.js";
 
 const QUERY_LIMIT = 10;
 
 const devices = {};
 const devEvents = new EventEmitter();
 
-class Peer {
-    constructor() {
+class Peer extends Airsync {
+    constructor(peerId, secret) {
+        super(peerId, secret);
         this.type = 'airPeer';
-        /**
-         * this.peer=AirSync(info);
-         * this.peer.on('request',(req,respond)=>{
-         * req.body.parse();
-         * const reqType = req.body.type;
-         * const catagory = reqType.split(':')[0];
-         * const key = reqType.split(':')[1];
-         * if(catagory=='UPDATE'){
-         * devEvents.emit(key, 'local', req.body.data);
-         * }
-         * else if(catagory=='ACTION'){
-         * ...
-         * }
-         * else if(catagory=='GET'){
-         * ...
-         * }
-         * else if(catagory=='RESOURCE'){
-         * ...
-         * }
-         * })
-         */
+        this.on('request', (reqType, data, respond) => {
+            const catagory = reqType.split(':')[0];
+            const key = reqType.split(':')[1];
+            if (catagory == 'UPDATE') {
+                devEvents.emit(key, 'local', data);
+                respond(200, 'OK');
+            }
+            else if (catagory == 'ACTION') {
+                //* ...
+            }
+            else if (catagory == 'GET') {
+                //* ...
+            }
+            else if (catagory == 'RESOURCE') {
+                //* ...
+            }
+        })
+        this.on('connected', (info) => {
+            info.peerId = this.peerId;
+            devEvents.emit('deviceConnected', info);
+        })
+        this.on('sessionUpdate', (info) => {
+            info.peerId = this.peerId;
+            devEvents.emit('deviceUpdate', info);
+        })
     }
     getTimelineList(skip, cb) {
 
@@ -59,9 +64,7 @@ class Peer {
 
     }
     update(topic, data) {
-        /**
-         * this.peer.request({type: 'UPDATE:'+topic, data})
-         */
+        this.request('UPDATE:' + topic, data);
     }
 }
 
@@ -150,10 +153,8 @@ class GPhotos {
 
 }
 
-function addDevice(info) {
-    if (devices[info.id] == undefined) {
-        console.log('adding dev', info)
-        var id = info.id;
+function addDevice(id) {
+    if (devices[id] == undefined) {
         if (id == 'local') {
             devices[id] = new Local();
         }
@@ -165,6 +166,10 @@ function addDevice(info) {
         }
     }
 }
+
+airEvents.on('init1', (info) => {
+    devEvents.emit('newDevice', info);
+})
 
 class Device {
     constructor(devId) {
@@ -215,4 +220,4 @@ class Device {
  * updateTagsList
  */
 
-export { Device, devEvents, addDevice, airSyncInit };
+export { Device, devEvents, addDevice, airSyncInit, init1 };
