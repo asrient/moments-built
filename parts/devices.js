@@ -1,15 +1,16 @@
 import deleteSnaps from "./deleteSnap.js";
-import { Airsync, airEvents, airSyncInit, init1 } from "./airSync.js";
+import { AirSync, airEvents, airSyncInit, init1 } from "./airSync.js";
 
 const QUERY_LIMIT = 10;
 
 const devices = {};
 const devEvents = new EventEmitter();
 
-class Peer extends Airsync {
+class Peer extends AirSync {
     constructor(peerId, secret) {
         super(peerId, secret);
         this.type = 'airPeer';
+        this.local = devices.local;
         this.on('request', (reqType, data, respond) => {
             const catagory = reqType.split(':')[0];
             const key = reqType.split(':')[1];
@@ -18,26 +19,76 @@ class Peer extends Airsync {
                 respond(200, 'OK');
             }
             else if (catagory == 'ACTION') {
-                //* ...
+                if (key == 'addSnaps') {
+                    if (data.snaps != undefined) {
+                        //TODO: get file, save it then call local addSnaps
+                    }
+                }
+                else if (key == 'removeSnaps') {
+                    if (data.snapIds != undefined) {
+                        this.local.removeSnaps(data.snapIds);
+                    }
+                }
+                //...
             }
             else if (catagory == 'GET') {
-                //* ...
+                if (key == 'timelineList') {
+                    if (data.skip != undefined) {
+                        this.local.getTimelineList(data.skip, (list) => {
+                            respond(200, JSON.stringify(list));
+                        })
+                    }
+                    else if (key == 'snapInfo') {
+                        if (data.snapId != undefined) {
+                            this.local.getSnapInfo(data.snapId, (snap) => {
+                                respond(200, JSON.stringify(snap));
+                            })
+                        }
+                    }
+                }
+                //...
             }
             else if (catagory == 'RESOURCE') {
-                //* ...
+                this.local.getFile(key, (mime, buff) => {
+                    if (mime != null) {
+                        respond(200, buff);
+                    }
+                    else {
+                        respond(404, 'Not Found');
+                    }
+                })
             }
         })
         this.on('connected', (info) => {
-            info.peerId = this.peerId;
-            devEvents.emit('deviceConnected', info);
+            devEvents.emit('deviceConnected', this.peerId, info);
         })
         this.on('sessionUpdate', (info) => {
-            info.peerId = this.peerId;
-            devEvents.emit('deviceUpdate', info);
+            devEvents.emit('deviceUpdate', this.peerId, info);
         })
     }
-    getTimelineList(skip, cb) {
-
+    _getData(topic, reqObj = null, cb = function () { }) {
+        if (reqObj != null) {
+            reqObj = JSON.stringify(reqObj);
+        }
+        this.request('GET:' + topic, reqObj, (res) => {
+            if (res.status == 200) {
+                res.parseBody();
+                cb(JSON.parse(res.body));
+            }
+            else {
+                cb(null);
+            }
+        });
+        //TODO: Add a timeout for the req, and cb(null)
+    }
+    _sendAction(topic, reqObj = null) {
+        if (reqObj != null) {
+            reqObj = JSON.stringify(reqObj);
+        }
+        this.request('ACTION:' + topic, reqObj);
+    }
+    getTimelineList(skip = 0, cb) {
+        this._getData('timelineList', { skip }, cb);
     }
     getTagsCatalog(cb) {
 
@@ -46,22 +97,29 @@ class Peer extends Airsync {
 
     }
     getSnapInfo(snapId, cb) {
-
+        this._getData('snapInfo', { snapId }, cb);
     }
     getSnapInfoBatch(snapIds, cb) {
 
     }
     addSnaps(snaps) {
-
+        this._sendAction('addSnaps', { snaps });
     }
     removeSnaps(snapIds) {
-
+        this._sendAction('removeSnaps', { snapIds });
     }
     updateSnap(snap) {
 
     }
     getFile(key, cb) {
-
+        this.request('RESOURCE:' + key, null, (res) => {
+            if (res.status != 200) {
+                cb(res.body);
+            }
+            else {
+                cb(null);
+            }
+        })
     }
     update(topic, data) {
         this.request('UPDATE:' + topic, data);
@@ -98,11 +156,11 @@ class Local {
     addSnaps(snaps) {
         //write record to file
         //emit tag cat, tag lists and tl changes events
-        //TODO: emit tags catalog updates
-        //TODO: emit tags lists updates
         recs.insert(snaps, () => {
             Object.keys(devices).forEach((devId) => {
                 devices[devId].update('addTimelineSnaps', snaps);
+                //TODO: emit tags catalog updates
+                //TODO: emit tags lists updates
             })
         })
     }
@@ -110,8 +168,6 @@ class Local {
         //remove records
         //emit tag cat, tag lists and tl changes events
         deleteSnaps(snapIds, (snaps) => {
-            //TODO: emit tags catalog updates
-            //TODO: emit tags lists updates
             /**
              * this.getTagsCatalog((catalog)=>{
              * ...
@@ -120,6 +176,8 @@ class Local {
              */
             Object.keys(devices).forEach((devId) => {
                 devices[devId].update('removeTimelineSnaps', snapIds);
+                //TODO: emit tags catalog updates
+                //TODO: emit tags lists updates
             })
         });
     }

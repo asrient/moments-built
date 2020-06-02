@@ -51,6 +51,7 @@ var state = {
     getState: store.getState,
     subscribe: store.subscribe,
     isTimelineLoading: false,
+    timelineLoadCount: 0,
     isTimelineInit: false,
     init: function () {
         store.dispatch({ type: 'INIT' });
@@ -100,6 +101,7 @@ var state = {
     },
     loadTimelineList: function () {
         this.isTimelineLoading = true;
+        this.timelineLoadCount++;
         this.isTimelineInit = true;
         var srcIds = getSourceIds();
         var res = {};
@@ -276,6 +278,32 @@ var state = {
             s.window.relay = null;
             store.dispatch({ type: 'UPDATE', state: s });
         }
+    },
+    updatePeer: function (devId, updates) {
+        var willUpdate = false;
+        var s = store.getState();
+        if (updates.sessionId != undefined && s.sources[devId].sessionId != updates.sessionId) {
+            s.sources[devId].sessionId = updates.sessionId;
+            willUpdate = true;
+        }
+        if (updates.username != undefined && s.sources[devId].info.username != updates.info.username) {
+            s.sources[devId].info.username = updates.username;
+            window.srcs.set(devId + '.username', updates.username);
+            willUpdate = true;
+        }
+        if (updates.devicename != undefined && s.sources[devId].info.devicename != updates.info.devicename) {
+            s.sources[devId].info.devicename = updates.devicename;
+            window.srcs.set(devId + '.devicename', updates.devicename);
+            willUpdate = true;
+        }
+        if (updates.icon != undefined && s.sources[devId].info.icon != updates.info.icon) {
+            s.sources[devId].info.icon = updates.icon;
+            window.srcs.set(devId + '.icon', updates.icon);
+            willUpdate = true;
+        }
+        if (willUpdate) {
+            store.dispatch({ type: 'UPDATE', state: s });
+        }
     }
 }
 
@@ -304,18 +332,19 @@ devEvents.on('newDevice', (info) => {
     }
     store.dispatch({ type: 'UPDATE', state: s });
 })
-devEvents.on('deviceConnected', () => {
+devEvents.on('deviceConnected', (devId, updates) => {
     /**
      * ## if the tl page is still on early (first) load, we load it again forcefully.
      * not done for count > 2 for the sake of UX, (done automatically when user is ready to load more)
-     * if(state.timelineLoadCount<2){
-     * state.loadTimelineList()
-     * }
-     * reload tags list and cat, if the current page is such
+     * TODO: reload tags list and cat, if the current page is such
      */
+    state.updatePeer(devId, updates);
+    if (state.timelineLoadCount < 2) {
+        state.loadTimelineList();
+    }
 })
-devEvents.on('deviceUpdate', () => {
-
+devEvents.on('deviceUpdate', (devId, updates) => {
+    state.updatePeer(devId, updates);
 })
 devEvents.on('deviceDisconnected', () => {
 
@@ -353,7 +382,6 @@ devEvents.on('addTimelineSnaps', (devId, _snaps) => {
                 st.sources[devId].timeline.list.sort((a, b) => {
                     return b.taken_on - a.taken_on;
                 })
-                console.log('posting changes..', st.sources[devId].timeline.list)
                 store.dispatch({ type: 'UPDATE', state: st });
             }
         }

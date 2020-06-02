@@ -199,6 +199,7 @@ class AirSync extends EventEmitter {
         if (this.sessionId != null) {
             air.request(this.peerId + ':' + this.sessionId, buildMessage({ type, payload }), cb)
         }
+        this.init2(false);
     }
 }
 
