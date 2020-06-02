@@ -104,3 +104,6 @@
 .tippy-content{
     height: 25rem;
 }
+.text-selectable{
+    -webkit-user-select: text;
+}

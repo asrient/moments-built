@@ -9,7 +9,7 @@ function actions(act, data) {
     if (act == 'ADD_SNAP') {
         addSnap();
     }
-    if (act == 'OPEN_PAGE') {
+    else if (act == 'OPEN_PAGE') {
         var relay = null;
         var pg = data;
         if (data.split(':')[0] == 'tags') {
@@ -20,6 +20,9 @@ function actions(act, data) {
             }
         }
         window.state.openPage(pg, relay);
+    }
+    else if (act == 'ADD_PEER') {
+        window.state.init1(data);
     }
     else if (act == "DELETE_SNAPS") {
         var devs = {}

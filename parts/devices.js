@@ -14,6 +14,11 @@ class Peer extends AirSync {
         this.on('request', (reqType, data, respond) => {
             const catagory = reqType.split(':')[0];
             const key = reqType.split(':')[1];
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+
+            }
             if (catagory == 'UPDATE') {
                 devEvents.emit(key, 'local', data);
                 respond(200, 'OK');
@@ -34,23 +39,30 @@ class Peer extends AirSync {
             else if (catagory == 'GET') {
                 if (key == 'timelineList') {
                     if (data.skip != undefined) {
+                        console.log('REQUEST: GET: tl list', data);
                         this.local.getTimelineList(data.skip, (list) => {
+                            console.log('sending back response', list.length);
                             respond(200, JSON.stringify(list));
                         })
                     }
-                    else if (key == 'snapInfo') {
-                        if (data.snapId != undefined) {
-                            this.local.getSnapInfo(data.snapId, (snap) => {
-                                respond(200, JSON.stringify(snap));
-                            })
-                        }
+                    else {
+                        console.error('data not in proper format', data);
+                    }
+                }
+                else if (key == 'snapInfo') {
+                    if (data.snapId != undefined) {
+                        this.local.getSnapInfo(data.snapId, (snap) => {
+                            respond(200, JSON.stringify(snap));
+                        })
                     }
                 }
                 //...
             }
             else if (catagory == 'RESOURCE') {
+                console.log('REQUEST: RESOURCE:', key);
                 this.local.getFile(key, (mime, buff) => {
                     if (mime != null) {
+                        console.log('sending resource',buff.length);
                         respond(200, buff);
                     }
                     else {
@@ -71,7 +83,8 @@ class Peer extends AirSync {
             reqObj = JSON.stringify(reqObj);
         }
         this.request('GET:' + topic, reqObj, (res) => {
-            if(res!=null){
+            console.log('got a response [GET]')
+            if (res != null) {
                 if (res.status == 200) {
                     res.parseBody();
                     cb(JSON.parse(res.body));
@@ -93,6 +106,7 @@ class Peer extends AirSync {
         this.request('ACTION:' + topic, reqObj);
     }
     getTimelineList(skip = 0, cb) {
+        console.log('GETTING: tl list', skip);
         this._getData('timelineList', { skip }, cb);
     }
     getTagsCatalog(cb) {
@@ -118,11 +132,13 @@ class Peer extends AirSync {
     }
     getFile(key, cb) {
         this.request('RESOURCE:' + key, null, (res) => {
-            if(res!=null){
-                if (res.status != 200) {
-                    cb(res.body);
+            if (res != null) {
+                if (res.status == 200) {
+                    console.log('got resource',res.body.length);
+                    cb(Buffer.from(res.body));
                 }
                 else {
+                    console.error('failed to get resource', res.status, res.body);
                     cb(null);
                 }
             }
@@ -142,6 +158,7 @@ class Local {
     }
     getTimelineList(skip, cb) {
         recs.find({}).sort({ taken_on: -1 }).skip(skip).limit(QUERY_LIMIT).exec((err, snaps) => {
+            console.log('extracted from recs', snaps.length);
             var list = [];
             snaps.forEach(snap => {
                 list.push({ id: snap.id, taken_on: snap.taken_on })
@@ -221,16 +238,17 @@ class GPhotos {
 
 }
 
-function addDevice(id) {
+function addDevice(id, secret) {
     if (devices[id] == undefined) {
         if (id == 'local') {
             devices[id] = new Local();
         }
-        else if (id = 'gPhotos') {
+        else if (id == 'gPhotos') {
             devices[id] = new GPhotos();
         }
         else {
-            devices[id] = new Peer();
+            console.log('setting up a peer', id, secret);
+            devices[id] = new Peer(id, secret);
         }
     }
 }

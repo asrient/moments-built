@@ -19,7 +19,7 @@ import 'tippy.js/dist/tippy.css';
 if (window.srcs.get('local') == undefined) {
     console.log("Initializing sources..");
     window.srcs.set('local', {
-        id:'local',
+        id: 'local',
         isActive: true,
         type: 'local',
         name: "Computer",
@@ -31,6 +31,15 @@ if (!fs.existsSync(filesDir)) {
     fs.mkdirSync(filesDir + '/media', { recursive: true });
     fs.mkdirSync(filesDir + '/thumbs', { recursive: true });
 }
+
+function getUrl(url) {
+    return url.split('*').join('.')
+}
+
+function setUrl(url) {
+    return url.split('.').join('*')
+}
+
 
 state.init();
 
@@ -81,13 +90,21 @@ class Switcher extends React.Component {
 class DeviceMenu extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { isSrcMenuVisible: false, srcs: window.srcs.get() }
+        this.state = { isSrcMenuVisible: false, srcs: null }
     }
     componentDidMount() {
+        this.parseState();
         window.state.subscribe(() => {
-            this.state.srcs = window.srcs.get();
-            this.setState(this.state);
+            this.parseState();
         })
+    }
+    parseState() {
+        var sources = window.srcs.get();
+        this.state.srcs = {};
+        Object.keys(sources).forEach((devId) => {
+            this.state.srcs[getUrl(devId)] = sources[devId];
+        })
+        this.setState(this.state);
     }
     getSrcMenu = () => {
         var buildOpt = (srcId, src) => {
@@ -107,7 +124,7 @@ class DeviceMenu extends React.Component {
         var srcs = this.state.srcs;
         var srcIds = Object.keys(srcs);
         srcIds.forEach((srcId) => {
-            var src = window.srcs.get(srcId);
+            var src = window.srcs.get(setUrl(srcId));
             if (srcId == 'local') {
                 opts.local = buildOpt(srcId, src);
             }
@@ -138,35 +155,40 @@ class DeviceMenu extends React.Component {
         </div>)
     }
     render() {
-        return (<Tippy
-            visible={this.state.isSrcMenuVisible}
-            onClickOutside={() => {
-                this.state.isSrcMenuVisible = false;
-                this.setState(this.state);
-            }}
-            hideOnClick={false}
-            content={this.getSrcMenu()}
-            arrow={true}
-            className="src_menu"
-            animation="scale"
-            duration={0}
-            placement="bottom"
-            hideOnClick='toggle'
-            interactive={true}
-        >
-            <span><BarButton rounded={true} icon="SystemEntity_Computer" onClick={() => {
-                if (this.state.isSrcMenuVisible)
+        if (this.state.srcs != null) {
+            return (<Tippy
+                visible={this.state.isSrcMenuVisible}
+                onClickOutside={() => {
                     this.state.isSrcMenuVisible = false;
-                else
-                    this.state.isSrcMenuVisible = true;
-                this.setState(this.state);
-            }} /></span>
-        </Tippy>)
+                    this.setState(this.state);
+                }}
+                hideOnClick={false}
+                content={this.getSrcMenu()}
+                arrow={true}
+                className="src_menu"
+                animation="scale"
+                duration={0}
+                placement="bottom"
+                hideOnClick='toggle'
+                interactive={true}
+            >
+                <span><BarButton rounded={true} icon="SystemEntity_Computer" onClick={() => {
+                    if (this.state.isSrcMenuVisible)
+                        this.state.isSrcMenuVisible = false;
+                    else
+                        this.state.isSrcMenuVisible = true;
+                    this.setState(this.state);
+                }} /></span>
+            </Tippy>)
+        }
+        else {
+            return (<div></div>)
+        }
     }
 }
 
 
-const allPages = ['timeline', 'places', 'people', 'tags','welcome']
+const allPages = ['timeline', 'places', 'people', 'tags', 'welcome']
 
 class Nav extends React.Component {
     constructor(props) {
@@ -239,7 +261,7 @@ class Nav extends React.Component {
         if (this.state.currentPage == 'welcome') {
             return (<Welcome relay={this.state.relayToPage} />)
         }
-        else if(this.state.currentPage !=null) {
+        else if (this.state.currentPage != null) {
             return (
                 <div>
                     <div id="head">
@@ -253,7 +275,7 @@ class Nav extends React.Component {
                                 </div>
                                 <div className="handle"></div>
                             </div>
-    
+
                         </div>
                         {this.getPageBar()}
                     </div>
@@ -263,9 +285,9 @@ class Nav extends React.Component {
                 </div>
             )
         }
-        else{
-            return(<div style={{paddingTop:'45vh'}}>
-                <Loading/>
+        else {
+            return (<div style={{ paddingTop: '45vh' }}>
+                <Loading />
             </div>)
         }
     }

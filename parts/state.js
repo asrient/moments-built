@@ -4,26 +4,38 @@ import { Device, devEvents, addDevice, airSyncInit, init1, reveal } from "./devi
 
 const MAX_LOADING_TIME = 6000;
 
+function getUrl(url) {
+    return url.split('*').join('.')
+}
+
+function setUrl(url) {
+    return url.split('.').join('*')
+}
+
 function reducers(state = 0, action) {
     switch (action.type) {
         case 'INIT': {
             var keys = Object.keys(window.srcs.get());
             var sources = {};
             keys.forEach(key => {
-                sources[key] = {
-                    id: key,
-                    info: window.srcs.get(key),
+                var devId = getUrl(key);
+                var info = window.srcs.get(key);
+                sources[devId] = {
+                    id: devId,
+                    info,
                     sessionId: null,
                     snaps: {},
                     timeline: { list: null, skip: 0, isLoaded: false },
                     tags: null
                 }
-                addDevice(key);
+                console.log('setting up device', devId);
+                addDevice(devId, info.secret);
             });
             var st = ({
                 info: window.info.get(),
                 nav: { page: 'timeline', relay: null },
                 sources,
+                localPeers: {},
                 preview: { isActive: false, id: null, context: null },
                 window: { isActive: false, content: null, relay: null }
             })
@@ -54,12 +66,12 @@ var state = {
     timelineLoadCount: 0,
     isTimelineInit: false,
     init: function () {
-        store.dispatch({ type: 'INIT' });
         var info = window.info.get();
         if (info.uid != undefined && info.host != undefined) {
-            airSyncInit(airPeer);
             airPeer.start(info.uid, info.host, 'moments', info.username + ':' + info.devicename);
+            airSyncInit(airPeer);
         }
+        store.dispatch({ type: 'INIT' });
     },
     init0: function (dat) {
         if (dat.icon == undefined) {
@@ -77,12 +89,77 @@ var state = {
         window.info.set('devicename', dat.devicename);
         window.info.set('icon', dat.icon);
         if (dat.uid != undefined && dat.host != undefined) {
-            airPeer.start(dat.uid, dat.host, 'moments', dat.username + ':' + dat.devicename)
+            airPeer.start(dat.uid, dat.host, 'moments', dat.username + ':' + dat.devicename);
+            airSyncInit(airPeer);
         }
         store.dispatch({ type: 'INIT' });
     },
     init1,
     reveal,
+    parseAirId: function (airId) {
+        var ids = airId.split(':');
+        return {
+            uid: ids[0],
+            host: ids[1],
+            sessionId: ids[2]
+        }
+    },
+    addLocalPeer: function (peer) {
+        var airId = peer.uid + ':' + peer.host + ':' + peer.sessionId;
+        var st = store.getState();
+        //if (airId != airPeer.getMyAirIds().local) {
+        st.localPeers[airId] = {
+            username: peer.name.split(':')[0],
+            devicename: peer.name.split(':')[1],
+            uid: peer.uid,
+            host: peer.host,
+            sessionId: peer.sessionId,
+            icon: peer.icon
+        }
+        store.dispatch({ type: 'UPDATE', state: st });
+        //}
+    },
+    removeLocalPeer: function (peer) {
+        var airId = peer.uid + ':' + peer.host + ':' + peer.sessionId;
+        var st = store.getState();
+        delete st.localPeers[airId];
+        store.dispatch({ type: 'UPDATE', state: st });
+    },
+    getLocalPeers: function (cb) {
+        var st = store.getState();
+        var list = [];
+        var len = Object.keys(st.localPeers).length;
+        var counter = 0;
+        Object.keys(st.localPeers).forEach((airId) => {
+            var ids = this.parseAirId(airId);
+            var peerId = ids.uid + ':' + ids.host;
+            var data = {
+                uid: st.localPeers[airId].uid,
+                host: st.localPeers[airId].host,
+                sessionId: st.localPeers[airId].sessionId,
+                icon: st.localPeers[airId].icon,
+                username: st.localPeers[airId].username,
+                devicename: st.localPeers[airId].devicename,
+                isAdded: true
+            }
+            if (st.sources[peerId] == undefined) {
+                //new unknown device
+                data.isAdded = false;
+            }
+            else {
+                data.icon = st.sources[peerId].info.icon;
+            }
+            list.push(data);
+            counter++;
+            if (counter >= len) {
+                cb(list);
+            }
+
+        })
+        if (!len) {
+            cb([]);
+        }
+    },
     openPage: function (page, relay) {
         var data = store.getState();
         data.nav.page = page;
@@ -162,7 +239,7 @@ var state = {
         })
         window.setTimeout(() => {
             if (!isDone) {
-                console.log('tl loader still waiting after 6 secs, finalizing..');
+                console.warn('tl loader still waiting after 6 secs, finalizing..');
                 isDone = true;
                 done();
             }
@@ -215,7 +292,6 @@ var state = {
         dev.getSnapInfo(snapKey, (snap) => {
             var st = store.getState();
             st.sources[devId].snaps[snapKey] = snap;
-            console.log('loading snap info')
             store.dispatch({ type: 'UPDATE', state: st });
         })
     },
@@ -284,22 +360,26 @@ var state = {
         var willUpdate = false;
         var s = store.getState();
         if (updates.sessionId != undefined && s.sources[devId].sessionId != updates.sessionId) {
+            console.log('updating peer',updates.sessionId,s.sources[devId].sessionId);
             s.sources[devId].sessionId = updates.sessionId;
             willUpdate = true;
         }
-        if (updates.username != undefined && s.sources[devId].info.username != updates.info.username) {
+        if (updates.username != undefined && s.sources[devId].info.username != updates.username) {
+            console.log('updating peer',updates.username,s.sources[devId].info.username);
             s.sources[devId].info.username = updates.username;
-            window.srcs.set(devId + '.username', updates.username);
+            window.srcs.set(setUrl(devId) + '.username', updates.username);
             willUpdate = true;
         }
-        if (updates.devicename != undefined && s.sources[devId].info.devicename != updates.info.devicename) {
+        if (updates.devicename != undefined && s.sources[devId].info.devicename != updates.devicename) {
+            console.log('updating peer',updates.devicename,s.sources[devId].info.devicename);
             s.sources[devId].info.devicename = updates.devicename;
-            window.srcs.set(devId + '.devicename', updates.devicename);
+            window.srcs.set(setUrl(devId) + '.devicename', updates.devicename);
             willUpdate = true;
         }
-        if (updates.icon != undefined && s.sources[devId].info.icon != updates.info.icon) {
+        if (updates.icon != undefined && s.sources[devId].info.icon != updates.icon) {
+            console.log('updating peer',updates.icon,s.sources[devId].info.icon);
             s.sources[devId].info.icon = updates.icon;
-            window.srcs.set(devId + '.icon', updates.icon);
+            window.srcs.set(setUrl(devId) + '.icon', updates.icon);
             willUpdate = true;
         }
         if (willUpdate) {
@@ -309,6 +389,7 @@ var state = {
 }
 
 devEvents.on('newDevice', (info) => {
+    console.log('NEW DEVICE');
     /**
      * @info
      * uid
@@ -321,8 +402,8 @@ devEvents.on('newDevice', (info) => {
     info.type = 'airPeer'
     var s = store.getState();
     var peerId = info.uid + ':' + info.host;
-    window.srcs.set(peerId, info);
-    addDevice(peerId);
+    window.srcs.set(setUrl(peerId), info);
+    addDevice(peerId, info.secret);
     s.sources[peerId] = {
         id: peerId,
         info,
@@ -334,6 +415,7 @@ devEvents.on('newDevice', (info) => {
     store.dispatch({ type: 'UPDATE', state: s });
 })
 devEvents.on('deviceConnected', (devId, updates) => {
+    console.warn('DEVICE CONNECTED',devId,updates);
     /**
      * ## if the tl page is still on early (first) load, we load it again forcefully.
      * not done for count > 2 for the sake of UX, (done automatically when user is ready to load more)
@@ -435,6 +517,16 @@ win.webContents.session.protocol.interceptBufferProtocol('resource', (request, c
     })
 }, (error) => {
     if (error) console.error('Failed to register protocol', error)
+})
+
+airPeer.on('localPeerFound', (peer) => {
+    if (peer.app == 'moments')
+        state.addLocalPeer(peer);
+})
+
+airPeer.on('localPeerRemoved', (peer) => {
+    if (peer.app == 'moments')
+        state.removeLocalPeer(peer);
 })
 
 export default state;

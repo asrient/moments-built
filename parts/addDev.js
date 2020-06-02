@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
 import { BarButton, Loading,Icon } from "./global.js";
+import AddPeer from "./addPeer.js";
 import "./window.css";
 
 class AddDev extends React.Component {
@@ -19,7 +20,9 @@ class AddDev extends React.Component {
 
     render(){
         if(this.state.page=='root')
-        return(<div className="ad center-col">
+        return(<div className="ad">
+            <AddPeer/>
+            <div style={{width:'100%'}} className="center-col">
             <div className="ad_grp center-col">
               <div className="ink-black size-s base-semilight">Connect to Google Photos</div>
               <br/>
@@ -31,6 +34,7 @@ class AddDev extends React.Component {
             <div><button onClick={()=>{
                window.actions('GOOGLE_PHOTOS_LOGIN');
             }}>Log In</button></div>
+            </div>
             </div>
         </div>)
     }

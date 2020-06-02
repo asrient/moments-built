@@ -87,6 +87,9 @@ class AirSync extends EventEmitter {
                 }
             }
         })
+        setTimeout(() => {
+            this.init2();
+        }, 200); //
     }
     updatePeer(updates) {
         /**
@@ -100,6 +103,18 @@ class AirSync extends EventEmitter {
         if (updates.lastPing != undefined) {
             this.lastPing = updates.lastPing;
         }
+        if (updates.sessionId != undefined) {
+            this.sessionId = updates.sessionId;
+        }
+        if (updates.username != undefined) {
+            this.username = updates.username;
+        }
+        if (updates.devicename != undefined) {
+            this.devicename = updates.devicename;
+        }
+        if (updates.icon != undefined) {
+            this.icon = updates.icon;
+        }
         if (this.isConnected) {
             this.emit('sessionUpdate', updates);
         }
@@ -107,6 +122,9 @@ class AirSync extends EventEmitter {
             this.isConnected = true;
             this.emit('connected', updates);
         }
+    }
+    _scheduleInit2() {
+        setTimeout(this.init2, 1000 * 30);
     }
     _handleInit2(sessionId, encdata, respond) {
         var prev = null;
@@ -183,9 +201,10 @@ class AirSync extends EventEmitter {
                             update.icon = res.icon;
                         }
                         this.updatePeer(update);
+                        this._scheduleInit2();
                     }
                     else {
-                        console.warn("INIT2 BLOCKED: hash did not match!");
+                        console.warn("INIT2 BLOCKED: hash did not match!", dec, data);
                     }
                 }
                 //TODO: If it keeps unauthorizing.. find a way to UNINIT1 the peer

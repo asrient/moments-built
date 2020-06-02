@@ -15,7 +15,7 @@ class Thumb extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { snap: null, menu:false }
+        this.state = { snap: null, menu: false }
     }
     componentWillUnmount() {
         console.log('comp UNmounted!');
@@ -146,7 +146,7 @@ class ThumbsGrid extends React.Component {
         this.state = { list: null }
     }
     componentDidMount = () => {
-        console.log('grid mounted!')
+        //console.log('grid mounted!')
     }
     showThumbs = () => {
         var html = [];
