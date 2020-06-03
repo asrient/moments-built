@@ -126,12 +126,10 @@ function actions(act, data) {
         window.state.window.close();
     }
     else if (act == "ACTIVATE_SOURCE") {
-        //window.srcs.set(data + '.isActive', true);
-        //window.state.init();
+        window.state.activateDevice(data);
     }
     else if (act == "DEACTIVATE_SOURCE") {
-        //window.srcs.set(data + '.isActive', false);
-        //window.state.init();
+        window.state.deactivateDevice(data);
     }
     else if (act == "REGISTER_GOOGLEPHOTOS") {
         /*var srcId = code(2);

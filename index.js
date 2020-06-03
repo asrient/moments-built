@@ -20,10 +20,9 @@ if (window.srcs.get('local') == undefined) {
     console.log("Initializing sources..");
     window.srcs.set('local', {
         id: 'local',
-        isActive: true,
         type: 'local',
         name: "Computer",
-        icon: "assets://icons/SystemEntity_Computer.png"
+        addedOn: new Date().getTime()
     });
 }
 if (!fs.existsSync(filesDir)) {
@@ -90,7 +89,7 @@ class Switcher extends React.Component {
 class DeviceMenu extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { isSrcMenuVisible: false, srcs: null }
+        this.state = { isSrcMenuVisible: false, airPeers: null, local: null, gPhotos: null }
     }
     componentDidMount() {
         this.parseState();
@@ -99,17 +98,67 @@ class DeviceMenu extends React.Component {
         })
     }
     parseState() {
-        var sources = window.srcs.get();
-        this.state.srcs = {};
-        Object.keys(sources).forEach((devId) => {
-            this.state.srcs[getUrl(devId)] = sources[devId];
+        var st = window.state.getState();
+        var airPeers = [];
+        var local = null;
+        var gPhotos = null;
+        Object.keys(st.sources).forEach(devId => {
+            var source = {
+                id: devId,
+                isActive: st.sources[devId].isActive
+            }
+            if (devId == 'local') {
+                source.devicename = st.info.devicename;
+                source.username = st.info.username;
+                source.icon = st.info.icon;
+                local = source;
+            }
+            else if (devId == 'gPhotos') {/////
+                source.devicename = st.sources[devId].info.devicename;
+                source.username = st.sources[devId].info.username;
+                source.icon = st.sources[devId].info.icon;
+                gPhotos = source;
+            }/////
+            else {
+                source.devicename = st.sources[devId].info.devicename;
+                source.username = st.sources[devId].info.username;
+                source.icon = st.sources[devId].info.icon;
+                source.isConnected = false;
+                if (st.sources[devId].sessionId != null) {
+                    source.isConnected = true;
+                    source.color = 'blue';
+                    if (st.sources[devId].sessionId.split('.')[0] == 'local') {
+                        source.color = 'purple';
+                    }
+                }
+                airPeers.push(source);
+            }
         })
-        this.setState(this.state);
+        this.setState({ ...this.state, local, airPeers, gPhotos });
     }
     getSrcMenu = () => {
         var buildOpt = (srcId, src) => {
+            var icon = "assets://icons/SystemEntity_Computer.png";
+            if (src.icon != 'default') {
+                icon = `assets://avatars/${src.icon}.png`;
+            }
+            var details=null;
+            if(src.isConnected!=undefined){
+                if(src.isConnected){
+                    details=(<div className={`ink-${src.color} base-semilight`}>Connected</div>)
+                }
+                else{
+                    details=(<div className="ink-dark base-semilight">Not connected</div>)
+                }
+            }
             return ((<div key={srcId} className="srcm_opt"><div className="center">
-                <Icon src={src.icon} style={{ paddingRight: "0.4rem" }} /><div>{src.name}</div></div> <div>
+                <Icon src={icon} style={{ paddingRight: "0.4rem" }} />
+                <div style={{textAlign: 'left'}}>
+                    <div>{src.devicename}</div>
+                    <div style={{fontSize: '0.75rem'}}>{details}</div>
+                </div>
+                </div>
+                 <div>
                     <Switch checked={src.isActive} onChange={(check) => {
                         if (check) {
                             window.actions('ACTIVATE_SOURCE', srcId);
@@ -118,44 +167,40 @@ class DeviceMenu extends React.Component {
                             window.actions('DEACTIVATE_SOURCE', srcId);
                         }
                     }} />
-                </div></div>))
+                </div>
+                </div>))
         }
-        var opts = { local: null, cloud: [], airSync: [] };
-        var srcs = this.state.srcs;
-        var srcIds = Object.keys(srcs);
-        srcIds.forEach((srcId) => {
-            var src = window.srcs.get(setUrl(srcId));
-            if (srcId == 'local') {
-                opts.local = buildOpt(srcId, src);
-            }
-            else if (src.type == 'cloud/google') {
-                opts.cloud.push(buildOpt(srcId, src));
-            }
-            else {
-                opts.airSync.push(buildOpt(srcId, src));
-            }
+        var local = buildOpt('local', this.state.local);
+        var gPhotos = null;
+        if (this.state.gPhotos != null) {
+            gPhotos = buildOpt('gPhotos', this.state.gPhotos);
+        }
+        var airPeers = [];
+        this.state.airPeers.forEach((peer) => {
+            airPeers.push(buildOpt(peer.id, peer));
         })
         var getGrp = (title, opts) => {
-            if (opts.length) {
+            if (opts != null && opts.length) {
                 return (<div><div className="srcm_grp_title">{title}</div>
                     <div>{opts}</div></div>)
             }
         }
         return (<div className="ink-black size-xs base-regular">
             <div className="center-col size-xs" style={{ padding: "0.8rem 0.4rem" }}>
-                <div><Icon className="size-l" src="assets://icons/connectedDevices.png" /></div><div>Connected devices</div>
+                <div><Icon className="size-l" src="assets://icons/connectedDevices.png" /></div>
+                <div>Connected devices</div>
             </div>
             <div className="srcm_grp_title">THIS DEVICE</div>
-            <div>{opts.local}</div>
-            {getGrp('CLOUD', opts.cloud)}
-            {getGrp('AIR SYNC', opts.airSync)}
+            <div>{local}</div>
+            {getGrp('CLOUD', gPhotos)}
+            {getGrp('AIR SYNC', airPeers)}
             <div id="srcm_addbutt_holder"><div id="srcm_addbutt" onClick={() => {
                 window.actions('ADD_DEVICE');
             }} className="center">Add device</div></div>
         </div>)
     }
     render() {
-        if (this.state.srcs != null) {
+        if (this.state.local != null) {
             return (<Tippy
                 visible={this.state.isSrcMenuVisible}
                 onClickOutside={() => {

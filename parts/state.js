@@ -22,6 +22,7 @@ function reducers(state = 0, action) {
                 var info = window.srcs.get(key);
                 sources[devId] = {
                     id: devId,
+                    isActive: true,
                     info,
                     sessionId: null,
                     snaps: {},
@@ -160,6 +161,20 @@ var state = {
             cb([]);
         }
     },
+    activateDevice: function (devId) {
+        var st = store.getState();
+        if (st.sources[devId] != undefined) {
+            st.sources[devId].isActive = true;
+            store.dispatch({ type: 'UPDATE', state: st });
+        }
+    },
+    deactivateDevice: function (devId) {
+        var st = store.getState();
+        if (st.sources[devId] != undefined) {
+            st.sources[devId].isActive = false;
+            store.dispatch({ type: 'UPDATE', state: st });
+        }
+    },
     openPage: function (page, relay) {
         var data = store.getState();
         data.nav.page = page;
@@ -251,11 +266,13 @@ var state = {
         var srcIds = getSourceIds();
         var list = [];
         srcIds.forEach((srcId) => {
-            if (st.sources[srcId].timeline.list != null) {
-                st.sources[srcId].timeline.list.forEach((_item) => {
-                    var item = { id: srcId + '/' + _item.id, taken_on: _item.taken_on }
-                    list.push(item);
-                })
+            if (st.sources[srcId].isActive) {
+                if (st.sources[srcId].timeline.list != null) {
+                    st.sources[srcId].timeline.list.forEach((_item) => {
+                        var item = { id: srcId + '/' + _item.id, taken_on: _item.taken_on }
+                        list.push(item);
+                    })
+                }
             }
         })
         list.sort((a, b) => { return b.taken_on - a.taken_on });
@@ -299,13 +316,18 @@ var state = {
         var snapKey = snapId.split('/')[1];
         var st = store.getState();
         if (st.sources[devId] != undefined) {
-            var _snap = st.sources[devId].snaps[snapKey];
-            if (_snap != undefined) {
-                var snap = JSON.parse(JSON.stringify(_snap));
-                snap.id = snapId;
-                snap.file_key = devId + '/' + snap.file_key;
-                snap.thumbnail_key = devId + '/' + snap.thumbnail_key;
-                return snap;
+            if (st.sources[devId].isActive) {
+                var _snap = st.sources[devId].snaps[snapKey];
+                if (_snap != undefined) {
+                    var snap = { ..._snap };
+                    snap.id = snapId;
+                    snap.file_key = devId + '/' + snap.file_key;
+                    snap.thumbnail_key = devId + '/' + snap.thumbnail_key;
+                    return snap;
+                }
+                else {
+                    return null;
+                }
             }
             else {
                 return null;
@@ -358,24 +380,24 @@ var state = {
         var willUpdate = false;
         var s = store.getState();
         if (updates.sessionId != undefined && s.sources[devId].sessionId != updates.sessionId) {
-            console.log('updating peer',updates.sessionId,s.sources[devId].sessionId);
+            console.log('updating peer', updates.sessionId, s.sources[devId].sessionId);
             s.sources[devId].sessionId = updates.sessionId;
             willUpdate = true;
         }
         if (updates.username != undefined && s.sources[devId].info.username != updates.username) {
-            console.log('updating peer',updates.username,s.sources[devId].info.username);
+            console.log('updating peer', updates.username, s.sources[devId].info.username);
             s.sources[devId].info.username = updates.username;
             window.srcs.set(setUrl(devId) + '.username', updates.username);
             willUpdate = true;
         }
         if (updates.devicename != undefined && s.sources[devId].info.devicename != updates.devicename) {
-            console.log('updating peer',updates.devicename,s.sources[devId].info.devicename);
+            console.log('updating peer', updates.devicename, s.sources[devId].info.devicename);
             s.sources[devId].info.devicename = updates.devicename;
             window.srcs.set(setUrl(devId) + '.devicename', updates.devicename);
             willUpdate = true;
         }
         if (updates.icon != undefined && s.sources[devId].info.icon != updates.icon) {
-            console.log('updating peer',updates.icon,s.sources[devId].info.icon);
+            console.log('updating peer', updates.icon, s.sources[devId].info.icon);
             s.sources[devId].info.icon = updates.icon;
             window.srcs.set(setUrl(devId) + '.icon', updates.icon);
             willUpdate = true;
@@ -404,6 +426,7 @@ devEvents.on('newDevice', (info) => {
     addDevice(peerId, info.secret);
     s.sources[peerId] = {
         id: peerId,
+        isActive: true,
         info,
         sessionId: null,
         snaps: {},
@@ -413,7 +436,7 @@ devEvents.on('newDevice', (info) => {
     store.dispatch({ type: 'UPDATE', state: s });
 })
 devEvents.on('deviceConnected', (devId, updates) => {
-    console.warn('DEVICE CONNECTED',devId,updates);
+    console.warn('DEVICE CONNECTED', devId, updates);
     /**
      * ## if the tl page is still on early (first) load, we load it again forcefully.
      * not done for count > 2 for the sake of UX, (done automatically when user is ready to load more)
