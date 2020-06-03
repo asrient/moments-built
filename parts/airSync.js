@@ -87,7 +87,7 @@ class AirSync extends EventEmitter {
                 }
             }
         })
-        setTimeout(() => {
+        setTimeout(() => {//////
             this.init2();
         }, 500); //200
     }
@@ -126,7 +126,7 @@ class AirSync extends EventEmitter {
     _scheduleInit2() {
         setTimeout(this.init2, 1000 * 30);
     }
-    _handleInit2(sessionId, encdata, respond) {
+    _handleInit2=(sessionId, encdata, respond)=> {
         var prev = null;
         if (this.sessionId != null) {
             prev = this.sessionId.split('.')[0]
@@ -160,7 +160,7 @@ class AirSync extends EventEmitter {
             respond(300, buildMessage({ decdata: 'none' }));
         }
     }
-    init2(force = false, onlySessionId = null) {
+    init2=(force = false, onlySessionId = null)=> {
         var dt = new Date;
         var time = dt.getTime();
         if ((this.lastPing + 1000 * 60 * 1.5) < time) {

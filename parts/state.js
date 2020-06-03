@@ -259,7 +259,6 @@ var state = {
             }
         })
         list.sort((a, b) => { return b.taken_on - a.taken_on });
-        console.log(list);
         return list;
     },
     isTimelineLoaded: function () {
@@ -296,7 +295,6 @@ var state = {
         })
     },
     getSnapInfo: function (snapId) {
-        console.log('getting snap info')
         var devId = snapId.split('/')[0];
         var snapKey = snapId.split('/')[1];
         var st = store.getState();
@@ -436,7 +434,7 @@ devEvents.on('addTimelineSnaps', (devId, _snaps) => {
     /**
      * Here we only update timeline
      */
-    console.log('adding new snaps to timeline');
+    //console.log('adding new snaps to timeline',_snaps);
     var st = store.getState();
     var isChanged = false;
     var snaps = _snaps.map((snap) => {
@@ -474,6 +472,7 @@ devEvents.on('addTimelineSnaps', (devId, _snaps) => {
     }
 })
 devEvents.on('removeTimelineSnaps', (devId, snapIds) => {
+    //console.warn('removing snap from state',devId,snapIds)
     var st = store.getState();
     var isChanged = false;
     if (st.sources[devId] != undefined) {

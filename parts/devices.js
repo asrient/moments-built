@@ -17,10 +17,11 @@ class Peer extends AirSync {
             try {
                 data = JSON.parse(data);
             } catch (e) {
-
+                console.warn('data could not be parsed', e)
             }
             if (catagory == 'UPDATE') {
-                devEvents.emit(key, 'local', data);
+                console.warn('UPDATE', reqType, data);
+                devEvents.emit(key, this.peerId, data);
                 respond(200, 'OK');
             }
             else if (catagory == 'ACTION') {
@@ -54,7 +55,6 @@ class Peer extends AirSync {
                 //...
             }
             else if (catagory == 'RESOURCE') {
-                console.log('REQUEST: RESOURCE:', key);
                 this.local.getFile(key, (mime, buff) => {
                     if (mime != null) {
                         respond(200, buff);
@@ -126,7 +126,7 @@ class Peer extends AirSync {
         this.request('RESOURCE:' + key, null, (res) => {
             if (res != null) {
                 if (res.status == 200) {
-                    cb('TYPE',Buffer.from(res.body));
+                    cb('TYPE', Buffer.from(res.body));
                 }
                 else {
                     console.error('failed to get resource', res.status, res.body);
@@ -139,6 +139,9 @@ class Peer extends AirSync {
         })
     }
     update(topic, data) {
+        if (typeof data == 'object') {
+            data = JSON.stringify(data);
+        }
         this.request('UPDATE:' + topic, data);
     }
 }
@@ -149,7 +152,6 @@ class Local {
     }
     getTimelineList(skip, cb) {
         recs.find({}).sort({ taken_on: -1 }).skip(skip).limit(QUERY_LIMIT).exec((err, snaps) => {
-            console.log('extracted from recs', snaps.length);
             var list = [];
             snaps.forEach(snap => {
                 list.push({ id: snap.id, taken_on: snap.taken_on })

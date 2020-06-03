@@ -18,11 +18,9 @@ class Thumb extends React.Component {
         this.state = { snap: null, menu: false }
     }
     componentWillUnmount() {
-        console.log('comp UNmounted!');
         this.unsub();
     }
     componentDidMount = () => {
-        console.log('comp mounted!');
         this.unsub = window.state.subscribe(() => {
             this.parseState();
         })
@@ -146,7 +144,7 @@ class ThumbsGrid extends React.Component {
         this.state = { list: null }
     }
     componentDidMount = () => {
-        //console.log('grid mounted!')
+        
     }
     showThumbs = () => {
         var html = [];
