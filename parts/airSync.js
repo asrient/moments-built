@@ -89,7 +89,7 @@ class AirSync extends EventEmitter {
         })
         setTimeout(() => {
             this.init2();
-        }, 200); //
+        }, 500); //200
     }
     updatePeer(updates) {
         /**

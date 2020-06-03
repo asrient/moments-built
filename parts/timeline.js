@@ -19,7 +19,6 @@ class Timeline extends React.Component {
         this.unsub();
     }
     componentDidMount = () => {
-        console.log('tl mounted!')
         this.props.setBar(
             <div id="tl_bar">
                 <div></div>
@@ -63,7 +62,6 @@ class Timeline extends React.Component {
         this.parseState();
     }
     parseState = () => {
-        console.log('parsing tl state');
         var _list = window.state.getTimelineList();
         var list = []
         _list.forEach((snap) => {

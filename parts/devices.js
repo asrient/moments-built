@@ -39,14 +39,9 @@ class Peer extends AirSync {
             else if (catagory == 'GET') {
                 if (key == 'timelineList') {
                     if (data.skip != undefined) {
-                        console.log('REQUEST: GET: tl list', data);
                         this.local.getTimelineList(data.skip, (list) => {
-                            console.log('sending back response', list.length);
                             respond(200, JSON.stringify(list));
                         })
-                    }
-                    else {
-                        console.error('data not in proper format', data);
                     }
                 }
                 else if (key == 'snapInfo') {
@@ -62,7 +57,6 @@ class Peer extends AirSync {
                 console.log('REQUEST: RESOURCE:', key);
                 this.local.getFile(key, (mime, buff) => {
                     if (mime != null) {
-                        console.log('sending resource',buff.length);
                         respond(200, buff);
                     }
                     else {
@@ -83,7 +77,6 @@ class Peer extends AirSync {
             reqObj = JSON.stringify(reqObj);
         }
         this.request('GET:' + topic, reqObj, (res) => {
-            console.log('got a response [GET]')
             if (res != null) {
                 if (res.status == 200) {
                     res.parseBody();
@@ -106,7 +99,6 @@ class Peer extends AirSync {
         this.request('ACTION:' + topic, reqObj);
     }
     getTimelineList(skip = 0, cb) {
-        console.log('GETTING: tl list', skip);
         this._getData('timelineList', { skip }, cb);
     }
     getTagsCatalog(cb) {
@@ -134,8 +126,7 @@ class Peer extends AirSync {
         this.request('RESOURCE:' + key, null, (res) => {
             if (res != null) {
                 if (res.status == 200) {
-                    console.log('got resource',res.body.length);
-                    cb(Buffer.from(res.body));
+                    cb('TYPE',Buffer.from(res.body));
                 }
                 else {
                     console.error('failed to get resource', res.status, res.body);
@@ -247,7 +238,6 @@ function addDevice(id, secret) {
             devices[id] = new GPhotos();
         }
         else {
-            console.log('setting up a peer', id, secret);
             devices[id] = new Peer(id, secret);
         }
     }

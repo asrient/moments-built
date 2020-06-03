@@ -474,7 +474,6 @@ devEvents.on('addTimelineSnaps', (devId, _snaps) => {
     }
 })
 devEvents.on('removeTimelineSnaps', (devId, snapIds) => {
-    console.log('removing snaps from timeline');
     var st = store.getState();
     var isChanged = false;
     if (st.sources[devId] != undefined) {
