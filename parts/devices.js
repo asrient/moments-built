@@ -184,13 +184,12 @@ class Local {
     }
     getTagsCatalog(cb) {
         var catalog = window.tags.get();
-        console.log('cat',catalog)
+        console.log('cat', catalog)
         cb(Object.keys(catalog));
     }
     getTagsList(tagId, cb) {
-        recs.find({ 'tags.id': tagId  }).sort({ taken_on: -1 }).exec((err, snaps) => {
+        recs.find({ 'tags.id': tagId }).sort({ taken_on: -1 }).exec((err, snaps) => {
             var list = [];
-            console.log('got tag list from recs',tagId,err,snaps);
             snaps.forEach((snap) => {
                 var tag = snap.tags.find((tag) => {
                     return tag.id == tagId;
@@ -234,11 +233,37 @@ class Local {
              * ```devices[devId].update('updateTagsCatalog', catalog);```
              * })
              */
-            Object.keys(devices).forEach((devId) => {
-                devices[devId].update('removeTimelineSnaps', snapIds);
-                //TODO: emit tags catalog updates
-                //TODO: emit tags lists updates
+            var catRemove = [];
+            var tagRemoves = {};
+            snaps.forEach((snap) => {
+                snap.tags.forEach((tag) => {
+                    if (window.tags.get(tag.id) == 1) {
+                        window.tags.del(tag.id);
+                        catRemove.push(tag.id);
+                    }
+                    else {
+                        window.tags.set(tag.id, window.tags.get(tag.id) - 1);
+                        if (tagRemoves[tag.id] != undefined) {
+                            tagRemoves[tag.id].push(snap.id);
+                        }
+                        else {
+                            tagRemoves[tag.id] = [snap.id];
+                        }
+                    }
+                })
             })
+            if (catRemove.length) {
+                this._sendUpdate('updateTagsCatalog', { remove: catRemove });
+            }
+            if (Object.keys(tagRemoves).length) {
+                var updates = [];
+                Object.keys(tagRemoves).forEach((tagId) => {
+                    var snapIds = tagRemoves[tagId];
+                    updates.push({ id: tagId, remove: snapIds })
+                })
+                this._sendUpdate('updateTagsList', updates);
+            }
+            this._sendUpdate('removeTimelineSnaps', snapIds);
         });
     }
     addTag(snapId, tagId) {
