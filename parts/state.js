@@ -65,6 +65,7 @@ var state = {
     subscribe: store.subscribe,
     isTimelineLoading: false,
     timelineLoadCount: 0,
+    isTagsCatalogInit: false,
     isTimelineInit: false,
     init: function () {
         var info = window.info.get();
@@ -189,8 +190,13 @@ var state = {
         var dev = new Device(srcId);
         dev.removeSnaps(ids);
     },
-    updateSnap: function (snapId, next) {
-
+    tagSnap: function (devId, snapId, tagId) {
+        var dev = new Device(devId);
+        dev.addTag(snapId, tagId);
+    },
+    untagSnap: function (devId, snapId, tagId) {
+        var dev = new Device(devId);
+        dev.removeTag(snapId, tagId);
     },
     loadTimelineList: function () {
         this.isTimelineLoading = true;
@@ -290,16 +296,84 @@ var state = {
         return allLoaded;
     },
     loadTagsCatalog: function () {
-
+        /**
+         * we only load those devIds that is not init yet (null)
+         */
+        this.isTagsCatalogInit = true;
+        var srcIds = getSourceIds();
+        var st = store.getState();
+        srcIds.forEach((devId) => {
+            if (st.sources[devId].tags == null) {
+                //will load this one
+                console.log('getting tags catalog for:', devId);
+                var dev = new Device(devId);
+                dev.getTagsCatalog((list) => {
+                    /**
+                     * @list
+                     * [tagId,...]
+                     */
+                    if (list != null) {
+                        var _st = store.getState();
+                        _st.sources[devId].tags = {};
+                        list.forEach((tagId) => {
+                            _st.sources[devId].tags[tagId] = null;
+                        })
+                        store.dispatch({ type: 'UPDATE', state: _st });
+                    }
+                })
+            }
+        })
     },
     getTagsCatalog: function () {
-
+        /**
+        * @list
+        * [tagId,...]
+        */
+        var srcIds = getSourceIds();
+        var st = store.getState();
+        var list = [];
+        srcIds.forEach((devId) => {
+            if (st.sources[devId].tags != null) {
+                Object.keys(st.sources[devId].tags).forEach((tagId) => {
+                    if (!list.includes(tagId)) {
+                        list.push(tagId);
+                    }
+                })
+            }
+        })
+        return list;
     },
     loadTagsList: function (tagId) {
-
+        console.log('loading tag list',tagId);
+        var srcIds = getSourceIds();
+        var st = store.getState();
+        srcIds.forEach((devId) => {
+            if (st.sources[devId].tags != null && st.sources[devId].tags[tagId] == null) {
+                var dev = new Device(devId);
+                dev.getTagsList(tagId, (list) => {
+                    console.log('got tag list',list);
+                    if (list != null) {
+                        var _st = store.getState();
+                        _st.sources[devId].tags[tagId] = list;
+                        store.dispatch({ type: 'UPDATE', state: _st });
+                    }
+                })
+            }
+        })
     },
-    getTagsList: function () {
-
+    getTagsList: function (tagId) {
+        var srcIds = getSourceIds();
+        var st = store.getState();
+        var list = [];
+        srcIds.forEach((devId) => {
+            if (st.sources[devId].tags != null && st.sources[devId].tags[tagId] != null && st.sources[devId].tags[tagId] != undefined) {
+                st.sources[devId].tags[tagId].forEach(snap => {
+                    list.push({ id: devId + '/' + snap.id, added_on: snap.added_on });
+                })
+            }
+        })
+        list.sort((a, b) => { return b.added_on - a.added_on });
+        return list;
     },
     loadSnapInfo: function (snapId) {
         var devId = snapId.split('/')[0];
@@ -516,14 +590,62 @@ devEvents.on('removeTimelineSnaps', (devId, snapIds) => {
         store.dispatch({ type: 'UPDATE', state: st });
     }
 })
-devEvents.on('updateSnap', () => {
-
+devEvents.on('updateSnap', (devId, snap) => {
+    var st = store.getState();
+    var snapId = snap.id;
+    st.sources[devId].snaps[snapId] = snap;
+    store.dispatch({ type: 'UPDATE', state: st });
 })
-devEvents.on('updateTagsCatalog', () => {
-
+devEvents.on('updateTagsCatalog', (devId, updates) => {
+    /**
+     * @updates
+     * add: [tagId,...]
+     * remove: [tagId,...]
+     */
+    var st = store.getState();
+    if (st.sources[devId].tags != null) {
+        if (updates.add != undefined) {
+            updates.add.forEach(tagId => {
+                st.sources[devId].tags[tagId] = null;
+            })
+        }
+        if (updates.remove != undefined) {
+            updates.remove.forEach(tagId => {
+                delete st.sources[devId].tags[tagId];
+            })
+        }
+        store.dispatch({ type: 'UPDATE', state: st });
+    }
 })
-devEvents.on('updateTagsList', () => {
-
+devEvents.on('updateTagsList', (devId, updates) => {
+    /**
+     * @updates
+     * [
+     *  {
+     *    id: tagId
+     *    add: [{},...],
+     *    remove: [snapId,...]
+     *  },
+     *  ...
+     * ]
+     */
+    var st = store.getState();
+    if (st.sources[devId].tags != null) {
+        updates.forEach((update) => {
+            var tagId = update.id;
+            if (st.sources[devId].tags[tagId] != undefined && st.sources[devId].tags[tagId] != null) {
+                if (update.add != undefined) {
+                    st.sources[devId].tags[tagId] = st.sources[devId].tags[tagId].concat(update.add);
+                }
+                else if (update.remove != undefined) {
+                    st.sources[devId].tags[tagId] = st.sources[devId].tags[tagId].filter((snap) => {
+                        return !update.remove.includes(snap.id);
+                    })
+                }
+            }
+        })
+        store.dispatch({ type: 'UPDATE', state: st });
+    }
 })
 
 win.webContents.session.protocol.interceptBufferProtocol('resource', (request, callback) => {

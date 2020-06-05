@@ -44,12 +44,12 @@ class Thumb extends React.Component {
         var snap=this.state.snap;
         if(snap!=null&&snap.tags.length){
             var html=[];
-            snap.tags.forEach((tagId)=>{
-            html.push(<div className="th_menu_opt_tag" key={tagId} onClick={()=>{
+            snap.tags.forEach((tag)=>{
+            html.push(<div className="th_menu_opt_tag" key={tag.id} onClick={()=>{
                 this.close();
-                window.actions('OPEN_PAGE','tags:'+tagId);
+                window.actions('OPEN_PAGE','tags:'+tag.id);
             }}>
-                <Icon className="size-xs" src="assets://icons/tag.png"/>&nbsp;{tagId}
+                <Icon className="size-xs" src="assets://icons/tag.png"/>&nbsp;{tag.id}
                 </div>)
             })
             return(<div className="th_menu_opt_grp">

@@ -11,34 +11,28 @@ import AddDev from "./addDev.js";
 class AddTag extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { tags: [], value: '' }
+        this.state = { catalog: [], value: '' }
     }
     parseState() {
-        var list = window.state.tags.list();
-        var tags = list.map((tag) => {
-            return tag.id;
-        })
-        this.state.tags = tags;
+        this.state.catalog = window.state.getTagsCatalog();
         this.setState(this.state);
     }
     componentDidMount() {
+        window.state.loadTagsCatalog();
         this.parseState();
         this.unsub = window.state.subscribe(() => {
             this.parseState();
         })
-        if (!window.state.tags.list().length) {
-            window.state.tags.getList();
-        }
     }
     componentWillUnmount() {
         this.unsub();
     }
     getTags() {
         var html = [];
-        html = this.state.tags.map((tagId) => {
-            return (<div key={tagId} onClick={()=>{
-              this.state.value=tagId;
-              this.setState(this.state);
+        html = this.state.catalog.map((tagId) => {
+            return (<div key={tagId} onClick={() => {
+                this.state.value = tagId;
+                this.setState(this.state);
             }} className="at_tag size-xs base-semilight">{tagId}</div>)
         })
         if (html.length)
@@ -48,12 +42,12 @@ class AddTag extends React.Component {
         this.state.value = event.target.value;
         this.setState(this.state);
     }
-    done=()=> {
+    done = () => {
         var snapId = this.props.id;
-        var tagId=this.state.value;
-        tagId=tagId.trim();
-        if(tagId!=''){
-            window.actions('TAG_SNAP',{snapId,tagId});
+        var tagId = this.state.value;
+        tagId = tagId.trim();
+        if (tagId != '') {
+            window.actions('TAG_SNAP', { snapId, tagId });
         }
         window.actions('CLOSE_WINDOW');
     }

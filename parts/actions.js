@@ -41,74 +41,14 @@ function actions(act, data) {
         })
     }
     else if (act == "TAG_SNAP") {
-        /*var dt = new Date();
-        var snapId = data.snapId;
-        var tagId = data.tagId;
-        var srcId = snapId.split(':')[0];
-        if (srcId == 'local') {
-            recs.findOne({ id: snapId }, (err, snap) => {
-                if (snap != null && !snap.tags.includes(tagId)) {
-                    recs.update({ id: snapId }, { "$push": { "tags": tagId } }, {}, () => {
-                        snap.tags.push(tagId);
-                        if (window.tags.get(tagId) != undefined) {
-                            window.tags.union(tagId + ".snaps", snapId);
-                            window.tags.set(tagId + ".modified_on", dt.getTime());
-                        }
-                        else {
-                            //new tag!
-                            window.tags.set(tagId, { snaps: [snapId], modified_on: dt.getTime() });
-                        }
-                        window.state.updateSnap(snapId, snap);
-                        //shoot this event to other devs too
-                    })
-                }
-                else {
-                    console.warn("snap already tagged")
-                }
-            })
-
-        }
-        else {
-            //steps for other sources
-        }*/
+        var devId = data.snapId.split('/')[0];
+        var id = data.snapId.split('/')[1];
+        window.state.tagSnap(devId, id, data.tagId)
     }
     else if (act == "UNTAG_SNAP") {
-        /* var dt = new Date();
-         var snapId = data.snapId;
-         var tagId = data.tagId;
-         var srcId = snapId.split(':')[0];
-         if (srcId == 'local') {
-             recs.findOne({ id: snapId }, (err, snap) => {
-                 if (snap != null && snap.tags.includes(tagId)) {
-                     recs.update({ id: snapId }, { "$pull": { "tags": tagId } }, {}, () => {
-                         var snaps = window.tags.get(tagId + ".snaps");
-                         snaps = snaps.filter((id) => {
-                             return id != snapId;
-                         });
-                         if (snaps.length) {
-                             window.tags.set(tagId + ".snaps", snaps);
-                         }
-                         else {
-                             //no snaps left in the tag, remove it
-                             //console.log("no snaps left in the tag, remove it from db");
-                             window.tags.del(tagId);
-                         }
-                         var tagInd = snap.tags.findIndex((tg) => {
-                             return tg == tagId;
-                         })
-                         if (tagInd >= 0) {
-                             snap.tags.splice(tagInd, 1);
-                         }
-                         window.state.updateSnap(snapId, snap);
-                         //shoot this event to other devs too
-                     })
-                 }
-             })
- 
-         }
-         else {
-             //steps for other sources
-         }*/
+        var devId = data.snapId.split('/')[0];
+        var id = data.snapId.split('/')[1];
+        window.state.untagSnap(devId, id, data.tagId)
     }
     else if (act == "PREVIEW_SNAP") {
         window.state.preview.open(data.id, data.context);

@@ -45,8 +45,8 @@ class Preview extends React.Component {
             if (preview.context == 'timeline') {
                 allSnaps = window.state.getTimelineList();
             }
-            else if (data.context.split(':')[0] == 'tag') {
-                var tagId = data.context.split(':')[1];
+            else if (preview.context.split(':')[0] == 'tag') {
+                var tagId = preview.context.split(':')[1];
                 allSnaps = window.state.getTagsList(tagId);
             }
             var ind = allSnaps.findIndex((snp) => {
@@ -211,7 +211,8 @@ class Preview extends React.Component {
         var tags = this.state.snap.tags;
         var html = []
         if (tags != undefined && tags.length > 0) {
-            html = tags.map((tagId) => {
+            html = tags.map((tag) => {
+                var tagId = tag.id;
                 return (<div key={tagId} className="pv_tag center">
                     <div onClick={() => {
                         window.actions('CLOSE_PREVIEW');

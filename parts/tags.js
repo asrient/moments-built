@@ -13,67 +13,69 @@ class Tags extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { page: 'home', tags: [] };
+        this.state = { page: null, catalog: [], list: [] };
     }
-    componentWillUnmount(){
+    componentWillUnmount() {
         this.unsub();
     }
     componentDidMount = () => {
-        window.state.tags.getList();
+        window.state.loadTagsCatalog();
+        var data = window.state.getState();
+        if (data.nav.page == 'tags' && data.nav.relay != null) {
+            window.state.loadTagsList(data.nav.relay);
+        }
         this.parseState();
-        this.unsub=window.state.subscribe(() => {
+        this.unsub = window.state.subscribe(() => {
             this.parseState();
         })
     }
     parseState() {
         var data = window.state.getState();
         if (data.nav.page == 'tags') {
-            if (data.nav.relay != null) {
-                this.state.page = data.nav.relay;
+            this.state.page = data.nav.relay;
+            this.state.catalog = window.state.getTagsCatalog();
+            if (this.state.page != null) {
+                this.state.list = window.state.getTagsList(this.state.page);
             }
-            this.state.tags = window.state.tags.list();
         }
         this.setState(this.state);
     }
+    changePage(tagId = null) {
+        if (tagId != null) {
+            window.state.loadTagsList(tagId);
+        }
+        window.state.openPage('tags', tagId);
+    }
     showTagList(selected = null) {
-        var tags = this.state.tags;
+        var tags = this.state.catalog;
         var html = [];
         tags.forEach((tag) => {
             var cls = "tg_view_list_item";
-            if (selected == tag.id) {
+            if (selected == tag) {
                 cls += " tg_view_list_item_selected";
             }
-            html.push(<div key={tag.id} className="ink-dark base-semilight">
+            html.push(<div key={tag} className="ink-dark base-semilight">
                 <div className={cls} onClick={() => {
-                    this.state.page = tag.id;
-                    this.setState(this.state);
+                    this.changePage(tag);
                 }}>
                     <div className="center">
                         <Icon className="size-xs" src="assets://icons/tag.png" />&nbsp;
-            {tag.id}
+            {tag}
                     </div>
-
-                    <div>{tag.snaps.length}</div>
                 </div>
             </div>)
         })
         return html;
     }
-    showGrid(tagId) {
-        var tagInd = this.state.tags.findIndex((tag) => {
-            return tag.id == tagId;
-        })
-        if (tagInd >= 0) {
-            var snaps = this.state.tags[tagInd].snaps.map((snap) => {
-                //console.log(snap)
-                return ({ id: snap.id, thumb: snap.thumb_url, type: snap.type })
-            })
-            return (<ThumbsGrid snaps={snaps} context={'tag:' + tagId} onThumbClick={(id) => {
-                window.actions('PREVIEW_SNAP', { id, context: 'tag:' + tagId })
-            }} />)
-        }
+    showGrid() {
+        var tagId = this.state.page;
+        var snapIds = this.state.list.map((snap) => { return snap.id })
+        return (<ThumbsGrid snapIds={snapIds} context={'tag:' + tagId} onThumbClick={(id) => {
+            window.actions('PREVIEW_SNAP', { id, context: 'tag:' + tagId })
+        }} />)
     }
-    showPage(tagId) {
+    showPage() {
+        var tagId = this.state.page;
         return (<div className="tg_view">
             <div className="tg_view_list">
                 <div style={{ padding: "0.5rem 2rem" }} className="ink-black base-regular size-s">Tags</div>
@@ -83,8 +85,7 @@ class Tags extends React.Component {
                 <div className="tg_view_head">
                     <div style={{ display: 'flex', alignItems: "center" }}>
                         <div className="tg_view_back size-s center" onClick={() => {
-                            this.state.page = 'home';
-                            this.setState(this.state);
+                            this.changePage(null);
                         }}><Icon className="size-xs" style={{ opacity: 0.5 }} src="assets://icons/Control_GoBack.png" /></div>
                         <div className="size-l ink-black base-regular">{tagId}</div>
                     </div>
@@ -92,23 +93,21 @@ class Tags extends React.Component {
                 </div>
                 <div style={{ height: '7.6rem' }}></div>
                 <div style={{ padding: '0.7rem' }}>
-                    {this.showGrid(tagId)}
+                    {this.showGrid()}
                 </div>
             </div>
         </div>)
     }
     showHomeTagList() {
-        var tags = this.state.tags;
+        var tags = this.state.catalog;
         var html = [];
         tags.forEach((tag) => {
-            html.push(<div key={tag.id} className="center">
+            html.push(<div key={tag} className="center">
                 <div className="tg_home_item center-col" onClick={() => {
-                    this.state.page = tag.id;
-                    this.setState(this.state);
+                    this.changePage(tag);
                 }}>
                     <div><Icon className="size-m" src="assets://icons/tag.png" /></div>
-                    <div className="size-s ink-black base-semilight">{tag.id}</div>
-                    <div className="size-xs ink-dark base-light">{tag.snaps.length}&nbsp;snaps</div>
+                    <div className="size-s ink-black base-semilight">{tag}</div>
                 </div>
             </div>)
         })
@@ -118,8 +117,8 @@ class Tags extends React.Component {
         return (<div style={{ height: "calc(100vh - 3rem)" }} className="center ink-black base-semilight size-xl">Tag your snaps</div>)
     }
     render() {
-        if (this.state.tags.length) {
-            if (this.state.page == 'home') {
+        if (this.state.catalog.length) {
+            if (this.state.page == null) {
                 return (<div>
                     <div style={{ height: "3rem" }}></div>
                     <div id="tags_home_head" className="ink-black size-xl base-bold">Tags</div>
@@ -128,7 +127,7 @@ class Tags extends React.Component {
                 </div>)
             }
             else {
-                return this.showPage(this.state.page)
+                return this.showPage()
             }
         }
         else {

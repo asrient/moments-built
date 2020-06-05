@@ -35,7 +35,16 @@ class Peer extends AirSync {
                         this.local.removeSnaps(data.snapIds);
                     }
                 }
-                //...
+                else if (key == 'addTag') {
+                    if (data.snapId != undefined && data.tagId != undefined) {
+                        this.local.addTag(data.snapId, data.tagId);
+                    }
+                }
+                else if (key == 'removeTag') {
+                    if (data.snapId != undefined && data.tagId != undefined) {
+                        this.local.removeTag(data.snapId, data.tagId);
+                    }
+                }
             }
             else if (catagory == 'GET') {
                 if (key == 'timelineList') {
@@ -52,7 +61,18 @@ class Peer extends AirSync {
                         })
                     }
                 }
-                //...
+                else if (key == 'tagsCatalog') {
+                    this.local.getTagsCatalog((list) => {
+                        respond(200, JSON.stringify(list));
+                    })
+                }
+                else if (key == 'tagsList') {
+                    if (data.tagId != undefined) {
+                        this.local.getTagsList(data.tagId, (list) => {
+                            respond(200, JSON.stringify(list));
+                        })
+                    }
+                }
             }
             else if (catagory == 'RESOURCE') {
                 this.local.getFile(key, (mime, buff) => {
@@ -102,10 +122,10 @@ class Peer extends AirSync {
         this._getData('timelineList', { skip }, cb);
     }
     getTagsCatalog(cb) {
-
+        this._getData('tagsCatalog', null, cb);
     }
-    getTagsList(tag, cb) {
-
+    getTagsList(tagId, cb) {
+        this._getData('tagsList', { tagId }, cb);
     }
     getSnapInfo(snapId, cb) {
         this._getData('snapInfo', { snapId }, cb);
@@ -119,8 +139,11 @@ class Peer extends AirSync {
     removeSnaps(snapIds) {
         this._sendAction('removeSnaps', { snapIds });
     }
-    updateSnap(snap) {
-
+    addTag(snapId, tagId) {
+        this._sendAction('addTag', { snapId, tagId });
+    }
+    removeTag(snapId, tagId) {
+        this._sendAction('removeTag', { snapId, tagId });
     }
     getFile(key, cb) {
         this.request('RESOURCE:' + key, null, (res) => {
@@ -160,10 +183,22 @@ class Local {
         })
     }
     getTagsCatalog(cb) {
-
+        var catalog = window.tags.get();
+        console.log('cat',catalog)
+        cb(Object.keys(catalog));
     }
-    getTagsList(tag, cb) {
-
+    getTagsList(tagId, cb) {
+        recs.find({ 'tags.id': tagId  }).sort({ taken_on: -1 }).exec((err, snaps) => {
+            var list = [];
+            console.log('got tag list from recs',tagId,err,snaps);
+            snaps.forEach((snap) => {
+                var tag = snap.tags.find((tag) => {
+                    return tag.id == tagId;
+                })
+                list.push({ id: snap.id, added_on: tag.added_on })
+            })
+            cb(list);
+        });
     }
     getSnapInfo(snapId, cb) {
         recs.findOne({ id: snapId }, (err, snap) => {
@@ -172,6 +207,11 @@ class Local {
     }
     getSnapInfoBatch(snapIds, cb) {
 
+    }
+    _sendUpdate(topic, data) {
+        Object.keys(devices).forEach((devId) => {
+            devices[devId].update(topic, data);
+        })
     }
     addSnaps(snaps) {
         //write record to file
@@ -201,8 +241,60 @@ class Local {
             })
         });
     }
-    updateSnap(snap) {
-
+    addTag(snapId, tagId) {
+        this.getSnapInfo(snapId, (snap) => {
+            if (tagId != undefined) {
+                var _tagInd = snap.tags.findIndex((tag) => { return tag.id == tagId });
+                if (_tagInd == -1) {
+                    //tag dosent already exists, proceed
+                    var time = new Date().getTime()
+                    snap.tags.push({ id: tagId, added_on: time });
+                    recs.update({ id: snapId }, snap, {}, () => {
+                        this._sendUpdate('updateSnap', snap);
+                    })
+                    var catExists = window.tags.has(tagId);
+                    if (catExists) {
+                        window.tags.set(tagId, window.tags.get(tagId) + 1);
+                    }
+                    else {
+                        window.tags.set(tagId, 1);
+                        this._sendUpdate('updateTagsCatalog', { add: [tagId] });
+                    }
+                    this._sendUpdate('updateTagsList', [{ id: tagId, add: [{ id: snapId, added_on: time }] }]);
+                }
+                else {
+                    console.error("not adding tag, already tagged with the tagId", tagId);
+                }
+            }
+        })
+    }
+    removeTag(snapId, tagId) {
+        this.getSnapInfo(snapId, (snap) => {
+            if (tagId != undefined) {
+                var _tagInd = snap.tags.findIndex((tag) => { return tag.id == tagId });
+                if (_tagInd >= 0) {
+                    //tag dosent already exists, proceed
+                    var time = new Date().getTime()
+                    snap.tags.splice(_tagInd, 1);
+                    recs.update({ id: snapId }, snap, {}, () => {
+                        this._sendUpdate('updateSnap', snap);
+                    })
+                    var catCount = window.tags.get(tagId);
+                    if (catCount > 1) {
+                        window.tags.set(tagId, window.tags.get(tagId) - 1);
+                    }
+                    else {
+                        //it was the only snap in the cat
+                        window.tags.del(tagId);
+                        this._sendUpdate('updateTagsCatalog', { remove: [tagId] });
+                    }
+                    this._sendUpdate('updateTagsList', [{ id: tagId, remove: [snapId] }]);
+                }
+                else {
+                    console.error("not removing tag, not tagged with the tagId", tagId);
+                }
+            }
+        })
     }
     getFile(key, cb) {
         var url = window.resources.getPath(key);
@@ -261,10 +353,10 @@ class Device {
         this.dev.getTimelineList(skip, cb);
     }
     getTagsCatalog(cb) {
-
+        this.dev.getTagsCatalog(cb);
     }
-    getTagsList(tag, cb) {
-
+    getTagsList(tagId, cb) {
+        this.dev.getTagsList(tagId, cb);
     }
     getSnapInfo(snapId, cb) {
         this.dev.getSnapInfo(snapId, cb);
@@ -278,13 +370,28 @@ class Device {
     removeSnaps(snapIds) {
         this.dev.removeSnaps(snapIds);
     }
-    updateSnap(snap) {
-
+    addTag(snapId, tagId) {
+        this.dev.addTag(snapId, tagId);
+    }
+    removeTag(snapId, tagId) {
+        this.dev.removeTag(snapId, tagId);
     }
     getFile(key, cb) {
         this.dev.getFile(key, cb);
     }
 }
+
+/**
+ * @updateTagsList
+ * [
+ *  {
+ *    id: tagId
+ *    add: [{},...],
+ *    remove: [snapId,...]
+ *  },
+ *  ...
+ * ]
+ */
 
 /**
  * @EVENTS
