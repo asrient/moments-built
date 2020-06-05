@@ -257,6 +257,9 @@ var state = {
                     }
                 })
             }
+            else{
+                count++;
+            }
         })
         window.setTimeout(() => {
             if (!isDone) {
@@ -513,12 +516,20 @@ devEvents.on('deviceConnected', (devId, updates) => {
     console.warn('DEVICE CONNECTED', devId, updates);
     /**
      * ## if the tl page is still on early (first) load, we load it again forcefully.
-     * not done for count > 2 for the sake of UX, (done automatically when user is ready to load more)
+     * not done for count > 3 for the sake of UX, (done automatically when user is ready to load more)
      * TODO: reload tags list and cat, if the current page is such
      */
     state.updatePeer(devId, updates);
-    if (state.timelineLoadCount < 2) {
+    if (state.timelineLoadCount < 3) {
+        console.warn("loading tl again after new dev");
         state.loadTimelineList();
+    }
+    var st = store.getState();
+    if(st.nav.page=='tags'){
+        state.loadTagsCatalog();
+        if(st.nav.relay!=null){
+            state.loadTagsList(st.nav.relay);
+        }
     }
 })
 devEvents.on('deviceUpdate', (devId, updates) => {
