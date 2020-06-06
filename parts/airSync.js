@@ -178,9 +178,6 @@ class AirSync extends EventEmitter {
             if (onlySessionId != null) {
                 reqId += ':' + onlySessionId;
             }
-            else if (this.sessionId != null) {
-                reqId += ':' + this.sessionId;
-            }
             air.request(reqId, buildMessage({ type: 'INIT2', encdata: enc }), (ress) => {
                 if (ress.status == 200) {
                     var res = parseMessage(ress.body);
