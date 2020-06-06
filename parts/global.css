@@ -8,11 +8,15 @@
     border:0.5px rgba(0, 0, 0, 0.10) solid;
     box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.28);
 }
+[data-theme="dark"] .bar_butt{
+  background: #6d6b6c;
+  border-color:rgba(170, 170, 170, 0.1);
+}
 .bar_butt_selected{
   background: #0000003d;
 }
 [data-theme="dark"] .bar_butt_selected{
-  background: #ffffff3d;
+  background: #cbcbcb;
 }
 .bar_butt:hover{
     background: rgba(233,231,233,0.6);

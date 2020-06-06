@@ -146,7 +146,7 @@ class DeviceMenu extends React.Component {
                     details = (<div className={`ink-${src.color} base-semilight`}>Connected</div>)
                 }
                 else {
-                    details = (<div className="ink-dark base-semilight">Not connected</div>)
+                    details = (<div className="ink-grey base-semilight">Not connected</div>)
                 }
             }
             return ((<div key={srcId} className="srcm_opt">
@@ -192,7 +192,7 @@ class DeviceMenu extends React.Component {
                     <div>{opts}</div></div>)
             }
         }
-        return (<div className="ink-black size-xs base-regular">
+        return (<div className="ink-primary size-xs base-regular">
             <div className="center-col size-xs" style={{ padding: "0.8rem 0.4rem" }}>
                 <div><Icon className="size-l" src="assets://icons/connectedDevices.png" /></div>
                 <div>Connected devices</div>
