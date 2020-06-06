@@ -19,40 +19,6 @@ class Timeline extends React.Component {
         this.unsub();
     }
     componentDidMount = () => {
-        this.props.setBar(
-            <div id="tl_bar">
-                <div></div>
-                <div className="center">
-                    <BarButton
-                        icon="font_minus"
-                        onClick={() => {
-                            //decrease size
-                            var state = this.state;
-                            if (state.thumbSize > 3) {
-                                state.thumbSize -= 1;
-                                this.setState(state);
-                            }
-
-                        }} />
-                    <BarButton icon="font_plus" onClick={() => {
-                        //increase size
-                        var state = this.state;
-                        if (state.thumbSize < 20) {
-                            state.thumbSize += 1;
-                            this.setState(state);
-                        }
-                    }} />
-                </div>
-                <div className="center tl_bar_opts">
-                    <BarButton
-                        icon="QuickActions_Add"
-                        onClick={() => {
-                            window.actions('ADD_SNAP');
-                        }} />
-                    <BarButton icon="Navigation_Trash" />
-                    <BarButton icon="QuickActions_Share" />
-                </div>
-            </div>)
         this.unsub = window.state.subscribe(() => {
             this.parseState();
         })
@@ -70,7 +36,8 @@ class Timeline extends React.Component {
             list.push(snap);
         })
         var allLoaded = window.state.isTimelineLoaded();
-        this.setState({ ...this.state, list, allLoaded });
+        var thumbSize=window.state.getThumbSize();
+        this.setState({ ...this.state, list, allLoaded,thumbSize });
     }
     loadMore = () => {
         if (!window.state.isTimelineLoading) {
@@ -164,7 +131,7 @@ class Timeline extends React.Component {
             if (this.state.list.length) {
                 return (
                     <div id="tl">
-                        <div style={{ overflow: 'auto', padding: '1rem', paddingTop: '7rem' }}>
+                        <div style={{ overflow: 'auto', padding: '1rem', paddingTop: '5rem' }}>
                             {this.renderGrids()}
                         </div>
                     </div>

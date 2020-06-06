@@ -228,7 +228,7 @@ class DeviceMenu extends React.Component {
                 hideOnClick='toggle'
                 interactive={true}
             >
-                <span><BarButton rounded={true} icon="SystemEntity_Computer" onClick={() => {
+                <span><BarButton icon="SystemEntity_Computer" onClick={() => {
                     if (this.state.isSrcMenuVisible)
                         this.state.isSrcMenuVisible = false;
                     else
@@ -249,33 +249,13 @@ const allPages = ['timeline', 'places', 'people', 'tags', 'welcome']
 class Nav extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { pageBarHtml: null, currentPage: null, relayToPage: null }
+        this.state = { currentPage: null, relayToPage: null }
     }
     componentDidMount() {
         this.parseState();
         window.state.subscribe(() => {
             this.parseState();
         })
-    }
-    getPageBar = () => {
-        if (this.state.pageBarHtml != null) {
-            return (
-                <div id="pagebar">
-                    {this.state.pageBarHtml}
-                </div>
-            )
-        }
-        else {
-            return ('')
-        }
-    }
-    setPageBar = (html) => {
-        if (html == undefined) {
-            html = null;
-        }
-        var state = this.state;
-        state.pageBarHtml = html;
-        this.setState(state);
     }
     parseState = () => {
         var data = window.state.getState();
@@ -301,13 +281,13 @@ class Nav extends React.Component {
     }
     getPage = () => {
         if (this.state.currentPage == 'timeline') {
-            return (<Timeline setBar={this.setPageBar} relay={this.state.relayToPage} />)
+            return (<Timeline relay={this.state.relayToPage} />)
         }
         else if (this.state.currentPage == 'places') {
             return (<div className="center" style={{ height: '100vh', fontSize: '80vh' }}>🗺</div>)
         }
         else if (this.state.currentPage == 'tags') {
-            return (<Tags setBar={this.setPageBar} relay={this.state.relayToPage} />)
+            return (<Tags relay={this.state.relayToPage} />)
         }
         else {
             return (<div className="center" style={{ height: '16rem' }}>🚧</div>)
@@ -321,19 +301,35 @@ class Nav extends React.Component {
             return (
                 <div>
                     <div id="head">
-                        <div id="menubar">
                             <div id="handle1" className="handle"></div>
+                            <div className="center">
+                                <BarButton
+                                    icon="font_minus"
+                                    onClick={() => {
+                                        //decrease size
+                                        window.state.reduceThumbSize();
+                                    }} />
+                                <BarButton icon="font_plus" onClick={() => {
+                                    //increase size
+                                    window.state.increaseThumbSize();
+                                }} />
+                            </div>
+                            <div className="handle"></div>
                             <div className="center"><Switcher change={this.setPage} selected={this.state.currentPage} /></div>
                             <div id="handle2">
                                 <div className="handle"></div>
                                 <div className="center">
+                                <BarButton
+                                    icon="QuickActions_Add"
+                                    onClick={() => {
+                                        window.actions('ADD_SNAP');
+                                    }} />
+                                <BarButton icon="Navigation_Trash" />
+                                <BarButton icon="QuickActions_Share" />
                                     <DeviceMenu />
                                 </div>
                                 <div className="handle"></div>
                             </div>
-
-                        </div>
-                        {this.getPageBar()}
                     </div>
                     <div>
                         {this.getPage()}

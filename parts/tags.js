@@ -13,7 +13,7 @@ class Tags extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { page: null, catalog: [], list: [] };
+        this.state = { page: null, catalog: [], list: [], thumbSize: 11 };
     }
     componentWillUnmount() {
         this.unsub();
@@ -38,6 +38,7 @@ class Tags extends React.Component {
                 this.state.list = window.state.getTagsList(this.state.page);
             }
         }
+        this.state.thumbSize = data.thumbSize;
         this.setState(this.state);
     }
     changePage(tagId = null) {
@@ -70,9 +71,12 @@ class Tags extends React.Component {
     showGrid() {
         var tagId = this.state.page;
         var snapIds = this.state.list.map((snap) => { return snap.id })
-        return (<ThumbsGrid snapIds={snapIds} context={'tag:' + tagId} onThumbClick={(id) => {
-            window.actions('PREVIEW_SNAP', { id, context: 'tag:' + tagId })
-        }} />)
+        return (<ThumbsGrid snapIds={snapIds}
+            context={'tag:' + tagId}
+            thumbSize={this.state.thumbSize + 'rem'}
+            onThumbClick={(id) => {
+                window.actions('PREVIEW_SNAP', { id, context: 'tag:' + tagId })
+            }} />)
     }
     showPage() {
         var tagId = this.state.page;
@@ -81,7 +85,7 @@ class Tags extends React.Component {
                 <div style={{ padding: "0.5rem 2rem" }} className="ink-black base-regular size-s">Tags</div>
                 <div>{this.showTagList(tagId)}</div>
             </div>
-            <div>
+            <div style={{overflow: 'auto'}}>
                 <div className="tg_view_head">
                     <div style={{ display: 'flex', alignItems: "center" }}>
                         <div className="tg_view_back size-s center" onClick={() => {
@@ -114,13 +118,13 @@ class Tags extends React.Component {
         return html;
     }
     emptyScreen() {
-        return (<div style={{ height: "calc(100vh - 3rem)" }} className="center ink-black base-semilight size-xl">Tag your snaps</div>)
+        return (<div style={{ height: "calc(100vh - 2.8rem)" }} className="center ink-black base-semilight size-xl">Tag your snaps</div>)
     }
     render() {
         if (this.state.catalog.length) {
             if (this.state.page == null) {
                 return (<div>
-                    <div style={{ height: "3rem" }}></div>
+                    <div style={{ height: "2.8rem" }}></div>
                     <div id="tags_home_head" className="ink-black size-xl base-bold">Tags</div>
                     <br />
                     <div className="tg_home_grid">{this.showHomeTagList()}</div>
