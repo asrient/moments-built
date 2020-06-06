@@ -179,8 +179,8 @@ class ThumbsGrid extends React.Component {
             return (
                 <div>
                     <div>
-                        <div className="tg_title ink-black base-regular">{this.props.title}</div>
-                        <div className="tg_location ink-dark base-semilight">{this.props.location} </div>
+                        <div className="tg_title ink-primary base-regular">{this.props.title}</div>
+                        <div className="tg_location ink-secondary base-semilight">{this.props.location} </div>
                     </div>
 
                     <div>

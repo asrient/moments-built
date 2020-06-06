@@ -55,7 +55,7 @@ class Tags extends React.Component {
             if (selected == tag) {
                 cls += " tg_view_list_item_selected";
             }
-            html.push(<div key={tag} className="ink-dark base-semilight">
+            html.push(<div key={tag} className="ink-secondary base-semilight">
                 <div className={cls} onClick={() => {
                     this.changePage(tag);
                 }}>
@@ -82,7 +82,7 @@ class Tags extends React.Component {
         var tagId = this.state.page;
         return (<div className="tg_view">
             <div className="tg_view_list">
-                <div style={{ padding: "0.5rem 2rem" }} className="ink-black base-regular size-s">Tags</div>
+                <div style={{ padding: "0.5rem 2rem" }} className="ink-primary base-regular size-s">Tags</div>
                 <div>{this.showTagList(tagId)}</div>
             </div>
             <div style={{overflow: 'auto'}}>
@@ -91,7 +91,7 @@ class Tags extends React.Component {
                         <div className="tg_view_back size-s center" onClick={() => {
                             this.changePage(null);
                         }}><Icon className="size-xs" style={{ opacity: 0.5 }} src="assets://icons/Control_GoBack.png" /></div>
-                        <div className="size-l ink-black base-regular">{tagId}</div>
+                        <div className="size-l ink-primary base-regular">{tagId}</div>
                     </div>
 
                 </div>
@@ -111,21 +111,21 @@ class Tags extends React.Component {
                     this.changePage(tag);
                 }}>
                     <div><Icon className="size-m" src="assets://icons/tag.png" /></div>
-                    <div className="size-s ink-black base-semilight">{tag}</div>
+                    <div className="size-s ink-primary base-semilight">{tag}</div>
                 </div>
             </div>)
         })
         return html;
     }
     emptyScreen() {
-        return (<div style={{ height: "calc(100vh - 2.8rem)" }} className="center ink-black base-semilight size-xl">Tag your snaps</div>)
+        return (<div style={{ height: "calc(100vh - 2.8rem)" }} className="center ink-primary base-semilight size-xl">Tag your snaps</div>)
     }
     render() {
         if (this.state.catalog.length) {
             if (this.state.page == null) {
                 return (<div>
                     <div style={{ height: "2.8rem" }}></div>
-                    <div id="tags_home_head" className="ink-black size-xl base-bold">Tags</div>
+                    <div id="tags_home_head" className="ink-primary size-xl base-bold">Tags</div>
                     <br />
                     <div className="tg_home_grid">{this.showHomeTagList()}</div>
                 </div>)

@@ -2,8 +2,6 @@ import $ from "jquery";
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 
-import "./common.css";
-
 import Timeline from "./parts/timeline.js";
 import Preview from "./parts/preview.js";
 import Tags from "./parts/tags.js";
@@ -76,7 +74,7 @@ class Switcher extends React.Component {
     }
     render() {
         return (
-            <div className="switches ink-black">
+            <div className="switches ink-primary">
                 {this.getSwitch('timeline', 'Timeline')}
                 {this.getSwitch('places', 'Places')}
                 {this.getSwitch('people', 'People')}

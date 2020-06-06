@@ -2,7 +2,7 @@
     padding:0.26rem 1rem;
     border-radius: 0.4rem;
     margin: 0.2rem 0.2rem;
-    background: rgb(255, 255, 255);
+    background: var(--bg);
     font-size: 0.9rem;
     overflow: hidden;
     border:0.5px rgba(0, 0, 0, 0.10) solid;
@@ -10,6 +10,9 @@
 }
 .bar_butt_selected{
   background: #0000003d;
+}
+[data-theme="dark"] .bar_butt_selected{
+  background: #ffffff3d;
 }
 .bar_butt:hover{
     background: rgba(233,231,233,0.6);

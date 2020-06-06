@@ -5,7 +5,7 @@ left:0px;
 height: 100vh;
 width:100vw;
 z-index: 2;
-background: rgb(245, 245, 245);
+background: var(--bg);
 display: grid;
 grid-template-rows: 2.5rem auto;
 }
@@ -15,6 +15,9 @@ grid-template-rows: 2.5rem auto;
    display: grid;
    grid-template-columns: 10rem 5rem auto 15rem;
 }
+[data-theme="dark"] .pv_head{
+    background: linear-gradient(rgba(84, 84, 84, 0.6), rgba(86, 86, 86, 0.6));
+  }
 .pv_handle{
     -webkit-app-region: drag;
     -webkit-user-select: none;
@@ -25,13 +28,13 @@ grid-template-rows: 2.5rem auto;
 .pv_picView{
     height: calc(100% - 5rem);
     width:100%;
-    background-color: white;
+    background-color: var(--bg);
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
 }
 .pv_body{
-   background-color: white;
+   background-color: var(--bg);
 }
 .pv_leftArrow{
     z-index: 3;
@@ -71,14 +74,13 @@ grid-template-rows: 2.5rem auto;
     left:0px;
     width:100%;
     height: 5rem;
-    background-color: rgb(255, 255, 255);
+    background-color: var(--bg);
 }
 .pv_thumb{
     height: 4rem;
     width:unset;
     margin: 0.5rem 0.1rem;
-    background-color: rgb(182, 182, 182);
-    
+    background-color: var(--tertiary);
 }
 .pv_thumbFocused{
     margin:0.5rem 1rem;
@@ -96,7 +98,10 @@ grid-template-rows: 2.5rem auto;
     background-color: rgba(0, 0, 0, 0.342);
     backdrop-filter: blur(20px);
     border-radius: 0.8rem;
-    color:white;
+    color:var(--bg);
+}
+[data-theme="dark"] .pv_tags_add{
+    background-color: rgba(255, 255, 255, 0.342)
 }
 .pv_tag{
     margin:0.3rem;
@@ -104,13 +109,20 @@ grid-template-rows: 2.5rem auto;
     background-color: rgba(0, 0, 0, 0.342);
     backdrop-filter: blur(20px);
     border-radius: 0.4rem;
-    color:white;
+    color:var(--bg);
+}
+[data-theme="dark"] .pv_tag{
+    background-color: rgba(255, 255, 255, 0.342)
 }
 .pv_tag:hover{
     background-color: rgba(0, 0, 0, 0.39);
 }
+[data-theme="dark"] .pv_tag:hover{
+    background-color: rgba(255, 255, 255, 0.39);
+}
 .pv_tags_add:hover{
-    background-color: rgba(0, 68, 255, 0.596);
+    background-color: rgba(0, 119, 255, 0.596);
+    color:var(--white);
 }
 .pv_tag_x:hover{
     opacity: 0.6;

@@ -227,7 +227,7 @@ class Preview extends React.Component {
     }
     getTags() {
         if (this.state.showTags) {
-            return (<div className="center pv_tags ink-white base-regular">
+            return (<div className="center pv_tags ink-bg base-regular">
                 <div className="pv_tags_add" onClick={() => {
                     window.actions("ADD_TAG", this.state.snap.id);
                 }}>Tag</div>

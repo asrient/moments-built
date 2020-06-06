@@ -5,7 +5,7 @@
   max-width: 18rem;
   font-size: 0.9rem;
   font-weight: 400;
-  background-color: rgb(255, 255, 255);
+  background-color: var(--bg);
   box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.28);
   border-radius: 0.4rem;
   overflow: hidden;
@@ -34,17 +34,23 @@
   display: grid;
   grid-template-columns: 7rem 7.5rem auto 18rem auto;
 }
+[data-theme="dark"] #head{
+  background: linear-gradient(rgba(84, 84, 84, 0.6), rgba(86, 86, 86, 0.6));
+}
 .switch {
   padding: 0.3rem 0.6rem;
   min-width: 4rem;
   border: 0.5px rgba(0, 0, 0, 0.1) solid;
   border-left: 0px;
 }
+[data-theme="dark"] .switch{
+  border-color: rgba(255, 255, 255, 0.1);
+}
 .active_switch {
-  background: #6f6f6f;
+  background: var(--grey);
   box-shadow: 0px 0px 4px 1px #48484847;
   border: none;
-  color: white;
+  color:  var(--white);
 }
 .switch:nth-last-child(1) {
   border-right: 0.5px rgba(0, 0, 0, 0.1) solid;
