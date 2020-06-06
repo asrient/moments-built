@@ -71,6 +71,9 @@ function actions(act, data) {
     else if (act == "DEACTIVATE_SOURCE") {
         window.state.deactivateDevice(data);
     }
+    else if (act == "REFRESH_DEVICE") {
+        window.state.refreshDevice(data);
+    }
     else if (act == "REGISTER_GOOGLEPHOTOS") {
         /*var srcId = code(2);
         window.srcs.set(srcId, {

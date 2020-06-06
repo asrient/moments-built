@@ -151,15 +151,23 @@ class DeviceMenu extends React.Component {
                     details=(<div className="ink-dark base-semilight">Not connected</div>)
                 }
             }
-            return ((<div key={srcId} className="srcm_opt"><div className="center">
+            return ((<div key={srcId} className="srcm_opt">
+                <div className="center">
                 <Icon src={icon} style={{ paddingRight: "0.4rem" }} />
                 <div style={{textAlign: 'left'}}>
                     <div>{src.devicename}</div>
                     <div style={{fontSize: '0.75rem'}}>{details}</div>
                 </div>
                 </div>
+                 <div className="center">
                  <div>
-                    <Switch checked={src.isActive} onChange={(check) => {
+                <Icon src="assets://icons/Control_Refresh.png" className="srcm_refresh" style={{ paddingRight: "0.4rem",fontSize:'0.85rem' }} 
+                onClick={()=>{
+                    window.actions('REFRESH_DEVICE', srcId);
+                }} />
+                </div>
+                <div>
+                <Switch checked={src.isActive} onChange={(check) => {
                         if (check) {
                             window.actions('ACTIVATE_SOURCE', srcId);
                         }
@@ -167,6 +175,7 @@ class DeviceMenu extends React.Component {
                             window.actions('DEACTIVATE_SOURCE', srcId);
                         }
                     }} />
+                </div>
                 </div>
                 </div>))
         }

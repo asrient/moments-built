@@ -98,6 +98,12 @@ var state = {
     },
     init1,
     reveal,
+    refreshDevice: function (devId) {
+        if (devId != 'local') {
+            var dev = new Device(devId);
+            dev.refresh();
+        }
+    },
     parseAirId: function (airId) {
         var ids = airId.split(':');
         return {
@@ -200,7 +206,6 @@ var state = {
     },
     loadTimelineList: function () {
         this.isTimelineLoading = true;
-        this.timelineLoadCount++;
         this.isTimelineInit = true;
         var srcIds = getSourceIds();
         var res = {};
@@ -234,6 +239,7 @@ var state = {
                 })
             })
             this.isTimelineLoading = false;
+            this.timelineLoadCount++;
             store.dispatch({ type: 'UPDATE', state: st });
         }
         srcIds.forEach((srcId) => {
@@ -257,7 +263,7 @@ var state = {
                     }
                 })
             }
-            else{
+            else {
                 count++;
             }
         })
@@ -347,14 +353,14 @@ var state = {
         return list;
     },
     loadTagsList: function (tagId) {
-        console.log('loading tag list',tagId);
+        console.log('loading tag list', tagId);
         var srcIds = getSourceIds();
         var st = store.getState();
         srcIds.forEach((devId) => {
             if (st.sources[devId].tags != null && st.sources[devId].tags[tagId] == null) {
                 var dev = new Device(devId);
                 dev.getTagsList(tagId, (list) => {
-                    console.log('got tag list',list);
+                    console.log('got tag list', list);
                     if (list != null) {
                         var _st = store.getState();
                         _st.sources[devId].tags[tagId] = list;
@@ -525,9 +531,9 @@ devEvents.on('deviceConnected', (devId, updates) => {
         state.loadTimelineList();
     }
     var st = store.getState();
-    if(st.nav.page=='tags'){
+    if (st.nav.page == 'tags') {
         state.loadTagsCatalog();
-        if(st.nav.relay!=null){
+        if (st.nav.relay != null) {
             state.loadTagsList(st.nav.relay);
         }
     }

@@ -161,6 +161,9 @@ class Peer extends AirSync {
             }
         })
     }
+    refresh(){
+        this.init2(true);
+    }
     update(topic, data) {
         if (typeof data == 'object') {
             data = JSON.stringify(data);
@@ -338,6 +341,9 @@ class Local {
             cb(null)
         }
     }
+    refresh(){
+        //Nothing to refresh from local, empty func is intentional
+    }
     update(topic, body) {
         // send update to this device
         devEvents.emit(topic, 'local', body);
@@ -403,6 +409,9 @@ class Device {
     }
     getFile(key, cb) {
         this.dev.getFile(key, cb);
+    }
+    refresh(){
+        this.dev.refresh();
     }
 }
 

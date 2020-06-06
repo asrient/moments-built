@@ -127,6 +127,7 @@ class AirSync extends EventEmitter {
         setTimeout(this.init2, 1000 * 30);
     }
     _handleInit2=(sessionId, encdata, respond)=> {
+        //console.log('handling init2')
         var prev = null;
         if (this.sessionId != null) {
             prev = this.sessionId.split('.')[0]
@@ -161,6 +162,7 @@ class AirSync extends EventEmitter {
         }
     }
     init2=(force = false, onlySessionId = null)=> {
+        //console.log('init2-ing..')
         var dt = new Date;
         var time = dt.getTime();
         if ((this.lastPing + 1000 * 60 * 1.5) < time) {
@@ -200,6 +202,7 @@ class AirSync extends EventEmitter {
                         if (res.icon != undefined) {
                             update.icon = res.icon;
                         }
+                        //console.log(update);
                         this.updatePeer(update);
                         this._scheduleInit2();
                     }

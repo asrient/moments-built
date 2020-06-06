@@ -96,7 +96,11 @@ class Loading extends React.Component {
 class Icon extends React.Component{
     render(){
         return(
-            <img src={this.props.src} className={"icon "+this.props.className} style={this.props.style}/>
+            <img src={this.props.src} onClick={()=>{
+                if(this.props.onClick!=undefined){
+                    this.props.onClick();
+                }
+            }} className={"icon "+this.props.className} style={this.props.style}/>
         )
     }
     }
