@@ -5,13 +5,15 @@
   max-width: 18rem;
   font-size: 0.9rem;
   font-weight: 400;
-  background-color: var(--bg);
-  box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.28);
+  background-color: #ffffff61;
+  box-shadow: inset 0 0 6px 2px #ffffff29;
+  border: 0.5px rgba(0, 0, 0, 0.19) solid;
   border-radius: 0.4rem;
   overflow: hidden;
 }
 [data-theme="dark"] .switches{
-  background-color: #6d6b6c;
+  background-color: #ffffff40;
+  box-shadow: inset 0 0 6px 2px #ffffff12;
 }
 .handle {
   -webkit-app-region: drag;
