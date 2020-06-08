@@ -45,6 +45,11 @@ function actions(act, data) {
         var id = data.snapId.split('/')[1];
         window.state.tagSnap(devId, id, data.tagId)
     }
+    else if (act == "SAVE_FILE") {
+        var devId = data.key.split('/')[0];
+        var key = data.key.split('/')[1];
+        window.state.saveFile(devId, key, data.filename)
+    }
     else if (act == "UNTAG_SNAP") {
         var devId = data.snapId.split('/')[0];
         var id = data.snapId.split('/')[1];

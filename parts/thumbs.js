@@ -15,7 +15,7 @@ class Thumb extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { snap: null, menu: false,devInfo: {} }
+        this.state = { snap: null, menu: false, devInfo: {} }
     }
     componentWillUnmount() {
         this.unsub();
@@ -79,6 +79,10 @@ class Thumb extends React.Component {
              this.close();
              window.actions('DELETE_SNAPS', [this.props.id] )
         }}>Delete</div>
+        <div className="th_menu_opt" onClick={()=>{
+             this.close();
+             window.actions('SAVE_FILE', {key: this.state.snap.file_key, filename: this.state.snap.filename} )
+        }}>Save</div>
         <div className="th_menu_opt">Export</div>
         <div className="th_menu_opt" onClick={()=>{
             this.close();

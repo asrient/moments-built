@@ -232,6 +232,33 @@ var state = {
             return null;
         }
     },
+    saveFile: function (srcId, key, filename = null) {
+        if (filename == null) {
+            filename = key;
+        }
+        var dev = new Device(srcId);
+        electron.remote.dialog.showSaveDialog({
+            properties: ['createDirectory'],
+            buttonLabel: "SAVE",
+            title: "Save file",
+            defaultPath: dirs.desktop + '/' + filename
+        })
+            .then(result => {
+                if (!result.canceled) {
+                    const pth = result.filePath;
+                    dev.getFile(key, (type, data) => {
+                        if (type != null) {
+                            fs.writeFile(pth, data, (e) => {
+                                console.log("FILE DOWNLOADED!", e);
+                            })
+                        }
+                    })
+                }
+            })
+            .catch(err => {
+                console.error(err)
+            })
+    },
     openPage: function (page, relay) {
         var data = store.getState();
         data.nav.page = page;
