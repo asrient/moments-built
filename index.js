@@ -28,7 +28,9 @@ if (!fs.existsSync(filesDir)) {
     fs.mkdirSync(filesDir + '/media', { recursive: true });
     fs.mkdirSync(filesDir + '/thumbs', { recursive: true });
 }
-
+if (!localStorage.getItem("thumbSize")) {
+    localStorage.setItem("thumbSize", 11);
+}
 function getUrl(url) {
     return url.split('*').join('.')
 }

@@ -36,7 +36,7 @@ function reducers(state = 0, action) {
                 info: window.info.get(),
                 nav: { page: 'timeline', relay: null },
                 sources,
-                thumbSize: 11,
+                thumbSize: parseInt(localStorage.getItem("thumbSize")),
                 localPeers: {},
                 preview: { isActive: false, id: null, context: null },
                 window: { isActive: false, content: null, relay: null }
@@ -72,6 +72,7 @@ var state = {
         var st = store.getState();
         if (st.thumbSize > 3) {
             st.thumbSize -= 1;
+            localStorage.setItem("thumbSize", st.thumbSize);
             store.dispatch({ type: 'UPDATE', state: st });
         }
     },
@@ -79,6 +80,7 @@ var state = {
         var st = store.getState();
         if (st.thumbSize < 20) {
             st.thumbSize += 1;
+            localStorage.setItem("thumbSize", st.thumbSize);
             store.dispatch({ type: 'UPDATE', state: st });
         }
     },
