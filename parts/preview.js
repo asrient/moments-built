@@ -19,7 +19,7 @@ class Preview extends React.Component {
             snaps: [],
             snapInd: 0,
             limits: { left: false, right: false },
-            showTags: true,
+            showDetails: true,
             showTbar: true
         }
         this.retries = [];
@@ -226,7 +226,7 @@ class Preview extends React.Component {
         }
     }
     getTags() {
-        if (this.state.showTags) {
+        if (this.state.showDetails) {
             return (<div className="center pv_tags ink-bg base-regular">
                 <div className="pv_tags_add" onClick={() => {
                     window.actions("ADD_TAG", this.state.snap.id);
@@ -236,10 +236,21 @@ class Preview extends React.Component {
             </div>)
         }
     }
+    getDevInfo() {
+        if (this.state.showDetails) {
+        var devId = this.state.id.split('/')[0];
+        var devInfo = window.state.getDeviceInfo1(devId);
+        return (<div className="pv_devInfo">
+            <Icon src={devInfo.icon} />&nbsp;
+            {devInfo.name}
+        </div>)
+        }
+    }
     getBody() {
         if (this.state.snap != null) {
             return (<div style={{ height: '100%' }}>
                 {this.getTags()}
+                {this.getDevInfo()}
                 {this.getArrow("left")}
                 {this.getView()}
                 {this.getArrow("right")}
@@ -270,13 +281,13 @@ class Preview extends React.Component {
                             }
                             this.setState(state);
                         }} />
-                        <BarButton icon="Control_Info" selected={this.state.showTags} onClick={() => {
+                        <BarButton icon="Control_Info" selected={this.state.showDetails} onClick={() => {
                             var state = this.state;
-                            if (this.state.showTags) {
-                                state.showTags = false
+                            if (this.state.showDetails) {
+                                state.showDetails = false
                             }
                             else {
-                                state.showTags = true
+                                state.showDetails = true
                             }
                             this.setState(state);
                         }} /><BarButton icon="Control_Share" />

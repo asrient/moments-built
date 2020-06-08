@@ -200,6 +200,38 @@ var state = {
             store.dispatch({ type: 'UPDATE', state: st });
         }
     },
+    getDeviceInfo1: function (devId) {
+        /**
+         * returns formatted info
+         */
+        var st = store.getState();
+        if (st.sources[devId] != undefined) {
+            var name = null;
+            var _icon = null;
+            var isActive = st.sources[devId].isActive;
+            if (devId == 'local') {
+                name = st.info.devicename;
+                _icon = st.info.icon;
+            }
+            else if (devId == 'gPhotos') {/////
+                name = st.sources[devId].info.devicename;
+                _icon = st.sources[devId].info.icon;
+            }/////
+            else {
+                var info = st.sources[devId].info;
+                name = info.devicename;
+                _icon = info.icon;
+            }
+            var icon = "assets://icons/SystemEntity_Computer.png";
+            if (_icon != 'default') {
+                icon = `assets://avatars/${_icon}.png`;
+            }
+            return ({ icon, name, isActive })
+        }
+        else {
+            return null;
+        }
+    },
     openPage: function (page, relay) {
         var data = store.getState();
         data.nav.page = page;

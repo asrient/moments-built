@@ -15,7 +15,7 @@ class Thumb extends React.Component {
      **/
     constructor(props) {
         super(props);
-        this.state = { snap: null, menu: false }
+        this.state = { snap: null, menu: false,devInfo: {} }
     }
     componentWillUnmount() {
         this.unsub();
@@ -31,8 +31,10 @@ class Thumb extends React.Component {
     }
     parseState = () => {
         var snap = window.state.getSnapInfo(this.props.id);
+        var devId=this.props.id.split('/')[0];
+        var devInfo=window.state.getDeviceInfo1(devId);
         if(snap!=null){
-            this.setState({...this.state,snap})
+            this.setState({...this.state,snap,devInfo})
         }
         return snap;
     }
@@ -128,7 +130,12 @@ class Thumb extends React.Component {
                     this.state.menu=true;
                     this.setState(this.state);
                 }}
-            ></div>
+            >
+                <div className="th_src">
+                    <Icon src={this.state.devInfo.icon} />&nbsp;
+                    {this.state.devInfo.name}
+                </div>
+            </div>
         </Tippy>
            
         )

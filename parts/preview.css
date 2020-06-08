@@ -1,132 +1,152 @@
-.pv_window{
-position: fixed;
-top:0px;
-left:0px;
-height: 100vh;
-width:100vw;
-z-index: 2;
-background: var(--bg);
-display: grid;
-grid-template-rows: 2.5rem auto;
+.pv_window {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  height: 100vh;
+  width: 100vw;
+  z-index: 2;
+  background: var(--bg);
+  display: grid;
+  grid-template-rows: 2.5rem auto;
 }
-.pv_head{
-   background: linear-gradient(rgba(233, 231, 233, 0.6), rgba(187, 186, 187, 0.6));
-   border-bottom:1.4px rgba(0, 0, 0, 0.1) solid;
-   display: grid;
-   grid-template-columns: 10rem 5rem auto 15rem;
+.pv_head {
+  background: linear-gradient(
+    rgba(233, 231, 233, 0.6),
+    rgba(187, 186, 187, 0.6)
+  );
+  border-bottom: 1.4px rgba(0, 0, 0, 0.1) solid;
+  display: grid;
+  grid-template-columns: 10rem 5rem auto 15rem;
 }
-[data-theme="dark"] .pv_head{
-    background: linear-gradient(rgba(84, 84, 84, 0.6), rgba(86, 86, 86, 0.6));
-  }
-.pv_handle{
-    -webkit-app-region: drag;
-    -webkit-user-select: none;
+[data-theme="dark"] .pv_head {
+  background: linear-gradient(rgba(84, 84, 84, 0.6), rgba(86, 86, 86, 0.6));
 }
-.pv_nohandle{
-    -webkit-app-region: no-drag;
+.pv_handle {
+  -webkit-app-region: drag;
+  -webkit-user-select: none;
 }
-.pv_picView{
-    height: calc(100% - 5rem);
-    width:100%;
-    background-color: var(--bg);
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
+.pv_nohandle {
+  -webkit-app-region: no-drag;
 }
-.pv_body{
-   background-color: var(--bg);
+.pv_picView {
+  height: calc(100% - 5rem);
+  width: 100%;
+  background-color: var(--bg);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
 }
-.pv_leftArrow{
-    z-index: 3;
-    height: 6rem;
-    width: 6rem;
-    position: fixed;
-    top:calc(50vh - 3rem);
-    left: 2rem;
-    background-image: url("assets://icons/Control_Left.png");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    opacity: 0.5;
+.pv_body {
+  background-color: var(--bg);
 }
-.pv_leftArrow:hover{
-    opacity: 1;
+.pv_leftArrow {
+  z-index: 3;
+  height: 6rem;
+  width: 6rem;
+  position: fixed;
+  top: calc(50vh - 3rem);
+  left: 2rem;
+  background-image: url("assets://icons/Control_Left.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.5;
 }
-.pv_rightArrow{
-    z-index: 3;
-    height: 6rem;
-    width: 6rem;
-    position: fixed;
-    top:calc(50vh - 3rem);
-    right: 2rem;
-    background-image: url("assets://icons/Control_Right.png");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    opacity: 0.5;
+.pv_leftArrow:hover {
+  opacity: 1;
 }
-.pv_rightArrow:hover{
-    opacity: 1;
+.pv_rightArrow {
+  z-index: 3;
+  height: 6rem;
+  width: 6rem;
+  position: fixed;
+  top: calc(50vh - 3rem);
+  right: 2rem;
+  background-image: url("assets://icons/Control_Right.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.5;
 }
-.pv_tBar{
-    position: fixed;
-    bottom:0px;
-    left:0px;
-    width:100%;
-    height: 5rem;
-    background-color: var(--bg);
+.pv_rightArrow:hover {
+  opacity: 1;
 }
-.pv_thumb{
-    height: 4rem;
-    width:unset;
-    margin: 0.5rem 0.1rem;
-    background-color: var(--tertiary);
+.pv_tBar {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  height: 5rem;
+  background-color: var(--bg);
 }
-.pv_thumbFocused{
-    margin:0.5rem 1rem;
+.pv_thumb {
+  height: 4rem;
+  width: unset;
+  margin: 0.5rem 0.1rem;
+  background-color: var(--tertiary);
 }
-.pv_tags{
-    position: absolute;
-    top:3rem;
-    font-size: 0.8rem;
-    right: 1rem;
-    flex-direction: row-reverse;
+.pv_thumbFocused {
+  margin: 0.5rem 1rem;
 }
-.pv_tags_add{
-    margin:0.3rem;
-    padding: 0.3rem 0.6rem;
-    background-color: rgba(0, 0, 0, 0.342);
-    backdrop-filter: blur(20px);
-    border-radius: 0.8rem;
-    color:var(--bg);
+.pv_tags {
+  position: absolute;
+  top: 3rem;
+  font-size: 0.8rem;
+  right: 1rem;
+  flex-direction: row-reverse;
 }
-[data-theme="dark"] .pv_tags_add{
-    background-color: rgba(255, 255, 255, 0.342)
+.pv_tags_add {
+  margin: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background-color: rgba(0, 0, 0, 0.342);
+  backdrop-filter: blur(20px);
+  border-radius: 0.8rem;
+  color: var(--bg);
 }
-.pv_tag{
-    margin:0.3rem;
-    padding: 0.3rem 0.6rem;
-    background-color: rgba(0, 0, 0, 0.342);
-    backdrop-filter: blur(20px);
-    border-radius: 0.4rem;
-    color:var(--bg);
+[data-theme="dark"] .pv_tags_add {
+  background-color: rgba(255, 255, 255, 0.342);
 }
-[data-theme="dark"] .pv_tag{
-    background-color: rgba(255, 255, 255, 0.342)
+.pv_tag {
+  margin: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background-color: rgba(0, 0, 0, 0.342);
+  backdrop-filter: blur(20px);
+  border-radius: 0.4rem;
+  color: var(--bg);
 }
-.pv_tag:hover{
-    background-color: rgba(0, 0, 0, 0.39);
+.pv_devInfo {
+  position: absolute;
+  display: flex;
+  align-content: center;
+  top: 3rem;
+  left: 1rem;
+  margin: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background-color: rgba(0, 0, 0, 0.342);
+  backdrop-filter: blur(20px);
+  font-size: 0.9rem;
+  border-radius: 0.4rem;
+  color: var(--bg);
 }
-[data-theme="dark"] .pv_tag:hover{
-    background-color: rgba(255, 255, 255, 0.39);
+[data-theme="dark"] .pv_tag {
+  background-color: rgba(255, 255, 255, 0.342);
 }
-.pv_tags_add:hover{
-    background-color: rgba(0, 119, 255, 0.596);
-    color:var(--white);
+[data-theme="dark"] .pv_devInfo {
+  background-color: rgba(255, 255, 255, 0.342);
 }
-.pv_tag_x:hover{
-    opacity: 0.6;
-    transform: scale(1.1);
-    rotate: 180deg;
-    transition-duration: 100ms;
+.pv_tag:hover {
+  background-color: rgba(0, 0, 0, 0.39);
+}
+[data-theme="dark"] .pv_tag:hover {
+  background-color: rgba(255, 255, 255, 0.39);
+}
+.pv_tags_add:hover {
+  background-color: rgba(0, 119, 255, 0.596);
+  color: var(--white);
+}
+.pv_tag_x:hover {
+  opacity: 0.6;
+  transform: scale(1.1);
+  rotate: 180deg;
+  transition-duration: 100ms;
 }

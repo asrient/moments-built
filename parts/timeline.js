@@ -80,7 +80,7 @@ class Timeline extends React.Component {
                     title = title + " " + takenOn.year;
                 }
                 section = {
-                    title, location: "Somewhere on Earth", snaps: [snap], date: takenOn
+                    title, /*location: "Somewhere on Earth",*/ snaps: [snap], date: takenOn
                 }
             }
         })
