@@ -1,5 +1,5 @@
 import deleteSnaps from "./deleteSnap.js";
-import { AirSync, airEvents, airSyncInit, init1, reveal } from "./airSync.js";
+import { AirSync, airEvents, airSyncInit, init1, reveal, updateInfo } from "./airSync.js";
 
 const QUERY_LIMIT = 10;
 
@@ -439,4 +439,4 @@ class Device {
  * updateTagsList
  */
 
-export { Device, devEvents, addDevice, airSyncInit, init1, reveal };
+export { Device, devEvents, addDevice, airSyncInit, init1, reveal, updateInfo };

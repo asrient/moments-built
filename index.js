@@ -5,6 +5,7 @@ import ReactDOM from "react-dom";
 import Timeline from "./parts/timeline.js";
 import Preview from "./parts/preview.js";
 import Tags from "./parts/tags.js";
+import Settings from "./parts/settings.js";
 import Window from "./parts/window.js";
 import Welcome from "./parts/welcome.js";
 import state from "./parts/state.js";
@@ -78,9 +79,8 @@ class Switcher extends React.Component {
         return (
             <div className="switches ink-primary">
                 {this.getSwitch('timeline', 'Timeline')}
-                {this.getSwitch('places', 'Places')}
-                {this.getSwitch('people', 'People')}
                 {this.getSwitch('tags', 'Tags')}
+                {this.getSwitch('settings', 'Settings')}
             </div>
         )
     }
@@ -244,7 +244,7 @@ class DeviceMenu extends React.Component {
 }
 
 
-const allPages = ['timeline', 'places', 'people', 'tags', 'welcome']
+const allPages = ['timeline', 'settings', 'tags', 'welcome']
 
 class Nav extends React.Component {
     constructor(props) {
@@ -283,14 +283,14 @@ class Nav extends React.Component {
         if (this.state.currentPage == 'timeline') {
             return (<Timeline relay={this.state.relayToPage} />)
         }
-        else if (this.state.currentPage == 'places') {
-            return (<div className="center" style={{ height: '100vh', fontSize: '80vh' }}>🗺</div>)
+        else if (this.state.currentPage == 'settings') {
+            return (<Settings relay={this.state.relayToPage} />)
         }
         else if (this.state.currentPage == 'tags') {
             return (<Tags relay={this.state.relayToPage} />)
         }
         else {
-            return (<div className="center" style={{ height: '16rem' }}>🚧</div>)
+        return (<div className="center" style={{ height: '16rem' }}>Couldn't find the page "{this.state.currentPage}"</div>)
         }
     }
     render() {

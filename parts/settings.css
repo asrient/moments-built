@@ -1,0 +1,56 @@
+#sett_container{
+    padding: 1rem;
+    padding-top: 2.8rem;
+    position: fixed;
+    overflow-y: scroll;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100vh;
+}
+#sett{
+    width: 100%;
+    display: grid;
+    grid-template-columns: 17rem auto;
+}
+#sett_sideMenu{
+    padding: 2rem;
+}
+.sett_menuOpt{
+    padding: 0.6rem 0.5rem;
+}
+.sett_menuOptActive{
+    color:rgb(0, 140, 255);
+}
+#sett_page{
+    margin: auto;
+    margin-top: 0.6rem;
+    width: 100%;
+    max-width: 40rem;
+    padding: 1rem;
+    background-color: #eceae7;
+    border-radius: 0.7rem;
+}
+[data-theme="dark"] #sett_page{
+    background-color: #272727;
+}
+.sett_thOpt{
+    padding: 0.4rem 0.7rem;
+    border-radius: 0.8rem;
+    margin: 0.5rem;
+}
+.sett_optActive{
+    background-color: #7979795e;
+    color: white;
+}
+#sett_avatars{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+.sett_avatar{
+    padding: 0.4rem 0.7rem;
+    border-radius: 0.8rem;
+    margin: 0.5rem;
+}

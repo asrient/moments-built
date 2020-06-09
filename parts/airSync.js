@@ -3,6 +3,7 @@ const airEvents = new EventEmitter();
 var air = null;
 var username = null;
 var devicename = null;
+var icon = null;
 
 function code(n = 5) {
     return crypto.randomBytes(n).toString('hex');
@@ -126,7 +127,7 @@ class AirSync extends EventEmitter {
     _scheduleInit2() {
         setTimeout(this.init2, 1000 * 30);
     }
-    _handleInit2=(sessionId, encdata, respond)=> {
+    _handleInit2 = (sessionId, encdata, respond) => {
         //console.log('handling init2')
         var prev = null;
         if (this.sessionId != null) {
@@ -150,7 +151,7 @@ class AirSync extends EventEmitter {
                 decdata: dec,
                 devicename,
                 username,
-                icon: 'default'//
+                icon
             }));
             if (this.sessionId != sessionId) {
                 this.init2(true, sessionId);
@@ -161,7 +162,7 @@ class AirSync extends EventEmitter {
             respond(300, buildMessage({ decdata: 'none' }));
         }
     }
-    init2=(force = false, onlySessionId = null)=> {
+    init2 = (force = false, onlySessionId = null) => {
         //console.log('init2-ing..')
         var dt = new Date;
         var time = dt.getTime();
@@ -225,17 +226,18 @@ class AirSync extends EventEmitter {
     }
 }
 
-function airSyncInit(airPeer) {
+function airSyncInit(airPeer, _icon) {
     air = airPeer;
     username = air.name.split(':')[0];
     devicename = air.name.split(':')[1];
+    icon = _icon;
     air.on('request', (req) => {
         var data = parseMessage(req.body);
         if (data.type == 'REVEAL') {
             var reply = {
                 username,
                 devicename,
-                icon: 'default'//
+                icon
             }
             req.respond(200, buildMessage(reply));
         }
@@ -262,7 +264,7 @@ function handleInit1(airId, req, respond) {
     var reply = {
         username,
         devicename,
-        icon: 'default'//
+        icon
     }
     respond(200, buildMessage(reply));
     airEvents.emit('init1', peer);
@@ -281,7 +283,7 @@ function init1(airId) {
         type: 'INIT1',
         username,
         devicename,
-        icon: 'default',//
+        icon,
         secret
     };
     air.request(airId, buildMessage(req), (ress) => {
@@ -308,10 +310,21 @@ function reveal(airId, cb) {
     })
 }
 
+function updateInfo(info) {
+    if (info.icon != undefined) {
+        icon = info.icon;
+    }
+    if (info.username != undefined) {
+        username = info.username;
+    }
+    if (info.devicename != undefined) {
+        devicename = info.devicename;
+    }
+}
 
 /**
  * @AirEVENTS
  * init1
  * 
  */
-export { AirSync, airEvents, airSyncInit, init1, reveal };
+export { AirSync, airEvents, airSyncInit, init1, reveal, updateInfo };

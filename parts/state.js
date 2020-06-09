@@ -1,6 +1,6 @@
 import { createStore } from 'redux'
 import { Photos } from "./gPhotos.js";
-import { Device, devEvents, addDevice, airSyncInit, init1, reveal } from "./devices.js";
+import { Device, devEvents, addDevice, airSyncInit, init1, reveal, updateInfo } from "./devices.js";
 
 const MAX_LOADING_TIME = 6000;
 
@@ -91,13 +91,13 @@ var state = {
         var info = window.info.get();
         if (info.uid != undefined && info.host != undefined) {
             airPeer.start(info.uid, info.host, 'moments', info.username + ':' + info.devicename);
-            airSyncInit(airPeer);
+            airSyncInit(airPeer, info.icon);
         }
         store.dispatch({ type: 'INIT' });
     },
     init0: function (dat) {
         if (dat.icon == undefined) {
-            dat.icon = 'default'
+            dat.icon = 'default'//
         }
         if (dat.username == undefined) {
             dat.username = 'user'
@@ -112,7 +112,7 @@ var state = {
         window.info.set('icon', dat.icon);
         if (dat.uid != undefined && dat.host != undefined) {
             airPeer.start(dat.uid, dat.host, 'moments', dat.username + ':' + dat.devicename);
-            airSyncInit(airPeer);
+            airSyncInit(airPeer, dat.icon);
         }
         store.dispatch({ type: 'INIT' });
     },
@@ -260,6 +260,13 @@ var state = {
             .catch(err => {
                 console.error(err)
             })
+    },
+    updateAvatar: function (icon) {
+        var st = store.getState();
+        st.info.icon = icon;
+        window.info.set('icon', icon);
+        updateInfo({ icon });
+        store.dispatch({ type: 'UPDATE', state: st });
     },
     openPage: function (page, relay) {
         var data = store.getState();

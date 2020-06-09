@@ -37,14 +37,14 @@
   z-index: 1;
   height: 2.8rem;
   display: grid;
-  grid-template-columns: 7rem 7.5rem auto 20rem auto;
+  grid-template-columns: 7rem 7.5rem auto 16rem auto;
 }
 [data-theme="dark"] #head{
   background: linear-gradient(rgba(90, 86, 88, 0.6), rgba(97, 97, 97, 0.6))
 }
 .switch {
   padding: 0.3rem 0.6rem;
-  min-width: 4.5rem;
+  min-width: 5rem;
   border: 0.5px rgba(0, 0, 0, 0.1) solid;
   border-left: 0px;
 }
