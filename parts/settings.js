@@ -73,26 +73,35 @@ class Settings extends React.Component {
             }
             return (<div className={cls} onClick={() => {
                 window.state.updateAvatar(avatar);
-            }}><Icon style={{fontSize:'4rem'}} src={`assets://avatars/${avatar}.png`} /></div>);
+            }}><Icon style={{ fontSize: '4rem' }} src={`assets://avatars/${avatar}.png`} /></div>);
         }
         return (<div>
             <div className="size-m base-regular ink-secondary">General</div>
             <hr style={{ marginTop: '0.3rem' }} />
             <div style={{ padding: '0.3rem' }}>
                 <div className="size-s ink-secondary base-semilight">Theme</div>
-                <div className="hstack space-around">
+                <div className="hstack space-around" style={{flexWrap:'wrap'}}>
                     <div className={getThemeClass('system')} onClick={() => {
                         window.changeTheme('system');
                         this.themeUpdate();
-                    }}>System</div>
+                    }}>
+                        <Icon style={{ fontSize: '3.6rem' }} src={"assets://screenshots/systemTheme.png"} />
+                        <div className="center">System</div>
+                    </div>
                     <div className={getThemeClass('light')} onClick={() => {
                         window.changeTheme('light');
                         this.themeUpdate();
-                    }}>Light</div>
+                    }}>
+                        <Icon style={{ fontSize: '3.6rem' }} src={"assets://screenshots/lightMode.png"} />
+                        <div className="center">Light</div>
+                    </div>
                     <div className={getThemeClass('dark')} onClick={() => {
                         window.changeTheme('dark');
                         this.themeUpdate();
-                    }}>Dark</div>
+                    }}>
+                        <Icon style={{ fontSize: '3.6rem' }} src={"assets://screenshots/darkMode.png"} />
+                        <div className="center">Dark</div>
+                    </div>
                 </div>
                 <hr />
                 <div>
@@ -144,16 +153,16 @@ class Settings extends React.Component {
     }
     render() {
         return (<div id="sett_container">
-                <div className="size-xl ink-primary base-regular">Settings</div>
-                <hr style={{ marginTop: '0.3rem' }} />
-                <div id="sett">
-                    {this.getSideMenu()}
-                    <div id="sett_page">
-                        {this.getPage()}
-                    </div>
+            <div className="size-xl ink-primary base-regular">Settings</div>
+            <hr style={{ marginTop: '0.3rem' }} />
+            <div id="sett">
+                {this.getSideMenu()}
+                <div id="sett_page">
+                    {this.getPage()}
                 </div>
+            </div>
 
-            </div>)
+        </div>)
     }
 }
 
