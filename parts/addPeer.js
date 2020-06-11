@@ -54,6 +54,9 @@ class Peer extends React.Component {
         if (icn == null || icn == 'default') {
             icn = 'assets://icons/SystemEntity_Computer.png';
         }
+        else {
+            icn = `assets://avatars/${icn}.png`;
+        }
         return (<div className="pr" style={{ textAlign: 'left' }}>
             <div className="center"><Icon className="size-l" style={{ margin: '0px' }} src={icn} /></div>
             <div>
@@ -95,7 +98,7 @@ class Nearby extends React.Component {
         this.parseState();
     }
     getList = () => {
-        if (this.state.list == null||this.state.loading) {
+        if (this.state.list == null || this.state.loading) {
             return (<div style={{ height: '6rem', width: '100%' }} className="center"><Loading /></div>)
         }
         else if (!this.state.list.length) {
@@ -120,7 +123,7 @@ class Nearby extends React.Component {
         return (<div id="nb">
             <div id="nb_head" className="ink-dark base-light">
                 <div>NEARBY</div>
-                <div className="ink-blue" onClick={()=>{this.refresh()}}>Refresh</div>
+                <div className="ink-blue" onClick={() => { this.refresh() }}>Refresh</div>
             </div>
             <div>
                 {this.getList()}
@@ -250,7 +253,7 @@ class AddPeer extends React.Component {
     }
     showIds() {
         var ids = airPeer.getMyAirIds();
-        return (<div className="ink-light size-xs base-light" style={{ textAlign: 'left', padding: '0.5rem', paddingTop:'1rem' }}>
+        return (<div className="ink-light size-xs base-light" style={{ textAlign: 'left', padding: '0.5rem', paddingTop: '1rem' }}>
             <div className="ink-light size-xs base-regular center">Share this code with others</div>
             <div><span className="ink-dark base-regular">WEB</span> &nbsp;&nbsp; <span className="text-selectable">{ids.global}</span></div>
             <div><span className="ink-dark base-regular">LOCAL</span> &nbsp;&nbsp;<span className="text-selectable">{ids.local}</span></div>

@@ -97,7 +97,7 @@ var state = {
     },
     init0: function (dat) {
         if (dat.icon == undefined) {
-            dat.icon = 'default'//
+            dat.icon = 'black_iMac'
         }
         if (dat.username == undefined) {
             dat.username = 'user'
