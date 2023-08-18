@@ -1,3 +1,6 @@
+const EventEmitter = require('events');
+const { Buffer } = require('buffer');
+
 import deleteSnaps from "./deleteSnap.js";
 import { AirSync, airEvents, airSyncInit, init1, reveal, updateInfo } from "./airSync.js";
 

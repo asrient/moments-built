@@ -1,3 +1,6 @@
+const EventEmitter = require('events');
+const { Buffer } = require('buffer');
+
 const airEvents = new EventEmitter();
 
 var air = null;

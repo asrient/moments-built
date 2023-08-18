@@ -16,13 +16,16 @@ module.exports = {
       },
       {
         test: /\.(s*)css$/,
-        use: ["style-loader", "css-loader", 'sass-loader']
+        use: ["style-loader", "css-loader"]
       }
     ]
   },
-  resolve: { extensions: ["*", ".js", ".jsx"] },
+  resolve: { 
+  extensions: ["*", ".js", ".jsx"],
+  fallback: { "buffer": require.resolve('buffer/'), } 
+},
   output: {
-    path: "H:\\AA\\moments\\desktop\\bundle",
+    path: path.join(__dirname, "../desktop/bundle"),
     publicPath: "/",
     filename: "[name].js"
   },
